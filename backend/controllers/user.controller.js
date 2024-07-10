@@ -45,7 +45,15 @@ exports.createUser = async (req, res) => {
       profilePicture,
     } = req.body;
 
-    if (!firstName || !lastName || !username || !email || !password || !role || !mobile) {
+    if (
+      !firstName ||
+      !lastName ||
+      !username ||
+      !email ||
+      !password ||
+      !role ||
+      !mobile
+    ) {
       return res.status(400).send("All fields are required");
     }
 
@@ -116,7 +124,7 @@ exports.getNewToken = async (req, res) => {
   try {
     const userId = req.params.id; // Access the "id" from the URL parameter
     if (userId) {
-      const userFetch = await User.findByPk( userId );
+      const userFetch = await User.findByPk(userId);
       if (userFetch) {
         // generate token
         const token = jwt.sign({ id: userFetch.id }, process.env.JWT_SECRET, {
@@ -205,6 +213,8 @@ exports.updateUser = async (req, res) => {
     res.status(500).send(err.message);
   }
 };
+
+// Todo : Password Reset
 
 // Delete a user
 exports.deleteUser = async (req, res) => {

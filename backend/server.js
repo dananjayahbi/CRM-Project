@@ -1,8 +1,8 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const userRoutes = require("./routes/user.routes");
-const { Sequelize } = require("sequelize");
 const dotenv = require("dotenv");
+const userRoutes = require("./routes/user.routes");
+const customerRoutes = require("./routes/customer.routes");
 
 dotenv.config();
 
@@ -16,6 +16,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/users", userRoutes);
+app.use("/api/customers", customerRoutes);
 
 const sequelize = require("./config/db.config");
 
