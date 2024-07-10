@@ -119,6 +119,36 @@ exports.loginUser = async (req, res) => {
   }
 };
 
+//Get a token
+exports.getNewToken = async (req, res) => {
+  try {
+    const userId = req.params.id; // Access the "id" from the URL parameter
+    if (userId) {
+      const userFetch = await User.findByPk( userId );
+      if (userFetch) {
+        // generate token
+        const token = jwt.sign({ id: userFetch._id }, process.env.JWT_SECRET, {
+          expiresIn: "1d",
+        });
+
+        res.json(token);
+      } else {
+        res.status(404).json({
+          errorMessage: "User not found",
+        });
+      }
+    } else {
+      res.status(400).json({
+        errorMessage: "Id not found in URL parameter",
+      });
+    }
+  } catch (e) {
+    res.status(401).json({
+      errorMessage: "Something went wrong!\n" + e,
+    });
+  }
+};
+
 // Get all users
 exports.getAllUsers = async (req, res) => {
   try {
