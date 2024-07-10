@@ -12,13 +12,11 @@ const protect = async (req, res, next) => {
 
       // Verify the token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      console.log("Decoded Token:", decoded);
 
-      // Get user from the token
+      // Get user from the token using Sequelize
       req.user = await User.findByPk(decoded.id, {
         attributes: { exclude: ["password"] },
       });
-      console.log("User:", req.user);
 
       if (!req.user) {
         return res.status(404).json({ status: "Error", data: "User not found" });
@@ -26,11 +24,11 @@ const protect = async (req, res, next) => {
 
       next();
     } catch (error) {
-      console.log("Error:", error);
+      console.error("JWT Verification Error:", error);
       if (error.name === "TokenExpiredError") {
         return res.status(401).json({ status: "Error", data: "Token expired" });
       } else {
-        return res.status(401).json("Not authorized");
+        return res.status(401).json({ status: "Error", data: "Invalid token" });
       }
     }
   } else {

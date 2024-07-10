@@ -1,7 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const userRoutes = require("./routes/user.routes");
-const dbConfig = require("./config/db.config");
 const { Sequelize } = require("sequelize");
 const dotenv = require("dotenv");
 
@@ -18,21 +17,11 @@ app.get("/", (req, res) => {
 
 app.use("/api/users", userRoutes);
 
+const sequelize = require("./config/db.config");
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, async () => {
   console.log(`Server is running on port ${PORT}.`);
-
-  // Initialize Sequelize
-  const sequelize = new Sequelize(
-    dbConfig.DB,
-    dbConfig.USER,
-    dbConfig.PASSWORD,
-    {
-      host: dbConfig.HOST,
-      dialect: dbConfig.dialect,
-      pool: dbConfig.pool,
-    }
-  );
 
   // Test the database connection
   try {

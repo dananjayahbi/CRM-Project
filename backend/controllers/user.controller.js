@@ -1,24 +1,13 @@
-const dbConfig = require("../config/db.config");
-const { Sequelize } = require("sequelize");
+const sequelize = require("../config/db.config");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
-  host: dbConfig.HOST,
-  dialect: dbConfig.dialect,
-  pool: dbConfig.pool,
-});
-
-const User = require("../models/user.model")(sequelize);
+const User = require("../models/user.model");
+sequelize.sync({ force: false });
 
 // Create the default super-admin user
 exports.createDefaultAdmin = async (req, res) => {
   try {
-    await sequelize.authenticate();
-    console.log(
-      "Connection to the database has been established successfully."
-    );
-    await sequelize.sync({ force: false });
     const defaultUser = await User.findOne({ where: { role: "superAdmin" } });
     if (!defaultUser) {
       const hashedPassword = await bcrypt.hash("admin", 10);
@@ -100,7 +89,7 @@ exports.loginUser = async (req, res) => {
 
     if (user) {
       // Generate and send the JWT token
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
         expiresIn: "24h",
       });
 
@@ -127,7 +116,7 @@ exports.getNewToken = async (req, res) => {
       const userFetch = await User.findByPk( userId );
       if (userFetch) {
         // generate token
-        const token = jwt.sign({ id: userFetch._id }, process.env.JWT_SECRET, {
+        const token = jwt.sign({ id: userFetch.id }, process.env.JWT_SECRET, {
           expiresIn: "1d",
         });
 
