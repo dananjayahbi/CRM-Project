@@ -113,7 +113,7 @@ exports.updateCustomer = async (req, res) => {
       });
     }
   } catch (err) {
-    console.error("Unable to connect to the database:", err);
+    console.error("Unable to update the customer:", err);
   }
 };
 
