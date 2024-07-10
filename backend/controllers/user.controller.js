@@ -18,6 +18,7 @@ exports.createDefaultAdmin = async (req, res) => {
         email: "admin@def.com",
         password: hashedPassword,
         role: "superAdmin",
+        mobile: "1234567890",
         isActive: true,
       });
 
@@ -40,10 +41,11 @@ exports.createUser = async (req, res) => {
       email,
       password,
       role,
+      mobile,
       profilePicture,
     } = req.body;
 
-    if (!firstName || !lastName || !username || !email || !password || !role) {
+    if (!firstName || !lastName || !username || !email || !password || !role || !mobile) {
       return res.status(400).send("All fields are required");
     }
 
@@ -64,6 +66,7 @@ exports.createUser = async (req, res) => {
       email,
       password: hashedPassword,
       role,
+      mobile,
       profilePicture: profilePicture ? profilePicture : "default.jpg",
       isActive: true,
     });
@@ -172,6 +175,7 @@ exports.updateUser = async (req, res) => {
       email,
       password,
       role,
+      mobile,
       profilePicture,
       isActive,
     } = req.body;
@@ -182,6 +186,7 @@ exports.updateUser = async (req, res) => {
       username ? (user.username = username) : user.username;
       email ? (user.email = email) : user.email;
       role ? (user.role = role) : user.role;
+      mobile ? (user.mobile = mobile) : user.mobile;
       profilePicture
         ? (user.profilePicture = profilePicture)
         : user.profilePicture;
