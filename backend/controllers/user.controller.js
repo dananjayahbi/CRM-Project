@@ -1,0 +1,184 @@
+const dbConfig = require("../config/db.config");
+const { Sequelize } = require("sequelize");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+
+const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
+  host: dbConfig.HOST,
+  dialect: dbConfig.dialect,
+  pool: dbConfig.pool,
+});
+
+const User = require("../models/user.model")(sequelize);
+
+// Create the default super-admin user
+exports.createDefaultAdmin = async (req, res) => {
+  try {
+    await sequelize.authenticate();
+    console.log(
+      "Connection to the database has been established successfully."
+    );
+    await sequelize.sync({ force: false });
+    const defaultUser = await User.findOne({ where: { role: "superAdmin" } });
+    if (!defaultUser) {
+      const hashedPassword = await bcrypt.hash("admin", 10);
+      await User.create({
+        firstName: "Default",
+        lastName: "Super-Admin",
+        username: "defAdmin",
+        email: "admin@def.com",
+        password: hashedPassword,
+        role: "superAdmin",
+        isActive: true,
+      });
+
+      res.status(201).send("Default super-admin created successfully");
+    } else {
+      res.status(200).send("Default super-admin already exists");
+    }
+  } catch (err) {
+    console.error("Unable to connect to the database:", err);
+  }
+};
+
+// Create a new user
+exports.createUser = async (req, res) => {
+  try {
+    const {
+      firstName,
+      lastName,
+      username,
+      email,
+      password,
+      role,
+      profilePicture,
+    } = req.body;
+
+    if (!firstName || !lastName || !username || !email || !password || !role) {
+      return res.status(400).send("All fields are required");
+    }
+
+    // Find if any user already exists with the provided email
+    const existing = await User.findOne({ where: { email } });
+    if (existing) {
+      return res
+        .status(409)
+        .send("User already exists with the provided email");
+    }
+
+    // Hash the password before saving
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = await User.create({
+      firstName,
+      lastName,
+      username,
+      email,
+      password: hashedPassword,
+      role,
+      profilePicture: profilePicture ? profilePicture : "default.jpg",
+      isActive: true,
+    });
+    res.status(201).json(newUser);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};
+
+// Login a user
+exports.loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ where: { email } });
+    if (user) {
+      // Compare the hashed password with the provided password
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (isMatch) {
+        res.status(200).json(user);
+      } else {
+        res.status(401).send("Invalid credentials");
+      }
+    } else {
+      res.status(404).send("User not found");
+    }
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};
+
+// Get all users
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.findAll();
+    res.status(200).json(users);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};
+
+// Get a user by id
+exports.getUserById = async (req, res) => {
+  try {
+    const user = await User.findByPk(req.params.id);
+    if (user) {
+      res.status(200).json(user);
+    } else {
+      res.status(404).send("User not found");
+    }
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};
+
+// Update a user
+exports.updateUser = async (req, res) => {
+  try {
+    const {
+      firstName,
+      lastName,
+      username,
+      email,
+      password,
+      role,
+      profilePicture,
+      isActive,
+    } = req.body;
+    const user = await User.findByPk(req.params.id);
+    if (user) {
+      firstName ? (user.firstName = firstName) : user.firstName;
+      lastName ? (user.lastName = lastName) : user.lastName;
+      username ? (user.username = username) : user.username;
+      email ? (user.email = email) : user.email;
+      role ? (user.role = role) : user.role;
+      profilePicture
+        ? (user.profilePicture = profilePicture)
+        : user.profilePicture;
+      isActive ? (user.isActive = isActive) : user.isActive;
+
+      if (password) {
+        // Hash the password before updating
+        user.password = await bcrypt.hash(password, 10);
+      }
+      await user.save();
+      res.status(200).json(user);
+    } else {
+      res.status(404).send("User not found");
+    }
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};
+
+// Delete a user
+exports.deleteUser = async (req, res) => {
+  try {
+    const user = await User.findByPk(req.params.id);
+    if (user) {
+      await user.destroy();
+      res.status(200).send("User deleted successfully");
+    } else {
+      res.status(404).send("User not found");
+    }
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};
