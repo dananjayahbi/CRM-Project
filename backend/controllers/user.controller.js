@@ -89,11 +89,25 @@ exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ where: { email } });
+
+    if (!email || !password) {
+      return res.status(400).send("Email and password are required");
+    }
+
+    if (user.isActive === false) {
+      return res.status(403).send("User is inactive");
+    }
+
     if (user) {
+      // Generate and send the JWT token
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+        expiresIn: "24h",
+      });
+
       // Compare the hashed password with the provided password
       const isMatch = await bcrypt.compare(password, user.password);
       if (isMatch) {
-        res.status(200).json(user);
+        res.status(200).json({ message: "Login successful", user, token });
       } else {
         res.status(401).send("Invalid credentials");
       }

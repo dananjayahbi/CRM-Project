@@ -3,8 +3,9 @@ const bodyParser = require("body-parser");
 const userRoutes = require("./routes/user.routes");
 const dbConfig = require("./config/db.config");
 const { Sequelize } = require("sequelize");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+const dotenv = require("dotenv");
+
+dotenv.config();
 
 const app = express();
 
@@ -17,7 +18,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/users", userRoutes);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, async () => {
   console.log(`Server is running on port ${PORT}.`);
 
