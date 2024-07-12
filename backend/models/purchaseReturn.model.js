@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db.config");
+const Supplier = require("./supplier.model");
 
 const PurchaseReturn = sequelize.define(
     "PurchaseReturn",
@@ -11,6 +12,10 @@ const PurchaseReturn = sequelize.define(
         },
         purchaseId: {
             type: DataTypes.INTEGER,
+            allowNull: false,
+        },
+        supplier: {
+            type: DataTypes.STRING,
             allowNull: false,
         },
         date: {

@@ -30,6 +30,10 @@ const PurchaseReturnItem = sequelize.define(
       type: DataTypes.FLOAT,
       allowNull: false,
     },
+    discount: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+    },
     unitCost: {
       type: DataTypes.FLOAT,
       allowNull: false,

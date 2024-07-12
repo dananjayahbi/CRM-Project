@@ -248,7 +248,7 @@ exports.deletePurchase = async (req, res) => {
       );
     }
 
-    // Now delete the Purchase itself
+    // Delete the Purchase itself
     await purchase.destroy();
 
     res.status(200).send("Purchase and associated items deleted successfully");
