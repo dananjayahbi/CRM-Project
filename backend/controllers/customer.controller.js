@@ -114,6 +114,7 @@ exports.updateCustomer = async (req, res) => {
     }
   } catch (err) {
     console.error("Unable to update the customer:", err);
+    res.status(500).send("Unable to update the customer");
   }
 };
 
