@@ -1,24 +1,13 @@
-const dbConfig = require("../config/db.config");
-const { Sequelize } = require("sequelize");
+const sequelize = require("../config/db.config");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
-  host: dbConfig.HOST,
-  dialect: dbConfig.dialect,
-  pool: dbConfig.pool,
-});
-
-const User = require("../models/user.model")(sequelize);
+const User = require("../models/user.model");
+sequelize.sync({ force: false });
 
 // Create the default super-admin user
 exports.createDefaultAdmin = async (req, res) => {
   try {
-    await sequelize.authenticate();
-    console.log(
-      "Connection to the database has been established successfully."
-    );
-    await sequelize.sync({ force: false });
     const defaultUser = await User.findOne({ where: { role: "superAdmin" } });
     if (!defaultUser) {
       const hashedPassword = await bcrypt.hash("admin", 10);
@@ -29,6 +18,7 @@ exports.createDefaultAdmin = async (req, res) => {
         email: "admin@def.com",
         password: hashedPassword,
         role: "superAdmin",
+        mobile: "1234567890",
         isActive: true,
       });
 
@@ -51,10 +41,19 @@ exports.createUser = async (req, res) => {
       email,
       password,
       role,
+      mobile,
       profilePicture,
     } = req.body;
 
-    if (!firstName || !lastName || !username || !email || !password || !role) {
+    if (
+      !firstName ||
+      !lastName ||
+      !username ||
+      !email ||
+      !password ||
+      !role ||
+      !mobile
+    ) {
       return res.status(400).send("All fields are required");
     }
 
@@ -75,6 +74,7 @@ exports.createUser = async (req, res) => {
       email,
       password: hashedPassword,
       role,
+      mobile,
       profilePicture: profilePicture ? profilePicture : "default.jpg",
       isActive: true,
     });
@@ -89,11 +89,25 @@ exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ where: { email } });
+
+    if (!email || !password) {
+      return res.status(400).send("Email and password are required");
+    }
+
+    if (user.isActive === false) {
+      return res.status(403).send("User is inactive");
+    }
+
     if (user) {
+      // Generate and send the JWT token
+      const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+        expiresIn: "24h",
+      });
+
       // Compare the hashed password with the provided password
       const isMatch = await bcrypt.compare(password, user.password);
       if (isMatch) {
-        res.status(200).json(user);
+        res.status(200).json({ message: "Login successful", user, token });
       } else {
         res.status(401).send("Invalid credentials");
       }
@@ -102,6 +116,36 @@ exports.loginUser = async (req, res) => {
     }
   } catch (err) {
     res.status(500).send(err.message);
+  }
+};
+
+//Get a token
+exports.getNewToken = async (req, res) => {
+  try {
+    const userId = req.params.id; // Access the "id" from the URL parameter
+    if (userId) {
+      const userFetch = await User.findByPk(userId);
+      if (userFetch) {
+        // generate token
+        const token = jwt.sign({ id: userFetch.id }, process.env.JWT_SECRET, {
+          expiresIn: "1d",
+        });
+
+        res.json(token);
+      } else {
+        res.status(404).json({
+          errorMessage: "User not found",
+        });
+      }
+    } else {
+      res.status(400).json({
+        errorMessage: "Id not found in URL parameter",
+      });
+    }
+  } catch (e) {
+    res.status(401).json({
+      errorMessage: "Something went wrong!\n" + e,
+    });
   }
 };
 
@@ -139,6 +183,7 @@ exports.updateUser = async (req, res) => {
       email,
       password,
       role,
+      mobile,
       profilePicture,
       isActive,
     } = req.body;
@@ -149,6 +194,7 @@ exports.updateUser = async (req, res) => {
       username ? (user.username = username) : user.username;
       email ? (user.email = email) : user.email;
       role ? (user.role = role) : user.role;
+      mobile ? (user.mobile = mobile) : user.mobile;
       profilePicture
         ? (user.profilePicture = profilePicture)
         : user.profilePicture;
@@ -167,6 +213,8 @@ exports.updateUser = async (req, res) => {
     res.status(500).send(err.message);
   }
 };
+
+// Todo : Password Reset
 
 // Delete a user
 exports.deleteUser = async (req, res) => {
