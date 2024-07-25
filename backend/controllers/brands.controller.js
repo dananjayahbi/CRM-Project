@@ -59,7 +59,7 @@ exports.updateBrand = async (req, res) => {
 
     if (brand) {
       name ? (brand.name = name) : brand.name;
-      description ? (brand.description = description) : brand.description;
+      description ? (brand.description = description) : "";
 
       await brand.save();
 
