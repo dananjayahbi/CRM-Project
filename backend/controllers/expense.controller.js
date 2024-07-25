@@ -17,7 +17,7 @@ exports.createExpense = async (req, res) => {
       category,
       expenseFor,
       amount,
-      note: note ? note : null,
+      note: note ? note : "",
     });
 
     res.status(201).send(createdExpense);
@@ -54,10 +54,6 @@ exports.updateExpense = async (req, res) => {
   try {
     const { id } = req.params;
     const { expenseDate, category, expenseFor, amount, note } = req.body;
-
-    if (!expenseDate || !category || !expenseFor || !amount) {
-      return res.status(400).send("All fields are required");
-    }
 
     const expense = await Expense.findByPk(req.params.id);
     if (!expense) {
