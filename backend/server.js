@@ -12,6 +12,8 @@ const brandsRoutes = require("./routes/brands.routes");
 const productsCategoryRoutes = require("./routes/productsCategory.routes");
 const unitsRoutes = require("./routes/units.routes");
 const paymentTypesRoutes = require("./routes/paymentTypes.routes");
+const taxRoutes = require("./routes/tax.routes");
+const productsRoutes = require("./routes/products.routes");
 
 dotenv.config();
 
@@ -35,6 +37,8 @@ app.use("/api/brands", brandsRoutes);
 app.use("/api/productsCategories", productsCategoryRoutes);
 app.use("/api/units", unitsRoutes);
 app.use("/api/paymentTypes", paymentTypesRoutes);
+app.use("/api/taxes", taxRoutes);
+app.use("/api/products", productsRoutes);
 
 const sequelize = require("./config/db.config");
 
