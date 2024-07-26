@@ -18,6 +18,10 @@ const productsRoutes = require("./routes/products.routes");
 dotenv.config();
 
 const app = express();
+const path = require('path');
+
+// Serve static files from the 'assets' directory
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));

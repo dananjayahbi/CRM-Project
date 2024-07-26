@@ -1,7 +1,23 @@
+const path = require("path");
+const fs = require("fs");
+const { v4: uuidv4 } = require("uuid");
+const multer = require("multer");
 const sequelize = require("../config/db.config");
 
 const Product = require("../models/products.model");
 sequelize.sync({ force: false });
+
+// Set up multer for file handling
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, "../assets/products"));
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = `${uuidv4()}${path.extname(file.originalname)}`;
+    cb(null, uniqueName);
+  },
+});
+const upload = multer({ storage });
 
 // Geterate a new code for the product
 const generateProductCode = async () => {
@@ -16,75 +32,84 @@ const generateProductCode = async () => {
 };
 
 // Create a new product
-exports.createProduct = async (req, res) => {
-  // generate a new product code
-  const productCode = await generateProductCode();
-  try {
-    const {
-      name,
-      brand,
-      category,
-      unit,
-      minimumQty,
-      barcode,
-      description,
-      imageUrl,
-      price,
-      tax,
-      purchasePrice,
-      taxType,
-      profitMargin,
-      salesPrice,
-      finalPrice,
-      discountType,
-      discount,
-      currentOpeningStock,
-    } = req.body;
+exports.createProduct = [
+  upload.single("image"),
+  async (req, res) => {
+    // generate a new product code
+    const productCode = await generateProductCode();
+    try {
+      const {
+        name,
+        brand,
+        category,
+        unit,
+        minimumQty,
+        barcode,
+        description,
+        price,
+        tax,
+        purchasePrice,
+        taxType,
+        profitMargin,
+        salesPrice,
+        finalPrice,
+        discountType,
+        discount,
+        currentOpeningStock,
+      } = req.body;
 
-    if (
-      !name ||
-      !brand ||
-      !category ||
-      !unit ||
-      !barcode ||
-      !price ||
-      !tax ||
-      !purchasePrice ||
-      !taxType ||
-      !salesPrice ||
-      !finalPrice
-    ) {
-      return res.status(400).send("Some fields are missing!");
+      if (
+        !name ||
+        !brand ||
+        !category ||
+        !unit ||
+        !barcode ||
+        !price ||
+        !tax ||
+        !purchasePrice ||
+        !taxType ||
+        !salesPrice ||
+        !finalPrice
+      ) {
+        return res.status(400).send("Some fields are missing!");
+      }
+
+      // Handling file upload
+      let imageUrl = "";
+      if (req.file) {
+        const filename = req.file.filename;
+        imageUrl = `/assets/products/${filename}`;
+      }
+
+      const createdProduct = await Product.create({
+        productCode,
+        name,
+        brand,
+        category,
+        unit,
+        minimumQty: minimumQty ? minimumQty : 0,
+        barcode,
+        description: description ? description : "",
+        imageUrl: imageUrl,
+        price,
+        tax,
+        purchasePrice,
+        taxType,
+        profitMargin: profitMargin ? profitMargin : 0,
+        salesPrice,
+        finalPrice,
+        discountType: discountType ? discountType : "",
+        discount: discount ? discount : 0,
+        currentOpeningStock: currentOpeningStock ? currentOpeningStock : 0,
+      });
+
+      return res.status(201).send(createdProduct);
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Internal Server Error");
     }
-
-    const createdProduct = await Product.create({
-      productCode,
-      name,
-      brand,
-      category,
-      unit,
-      minimumQty: minimumQty ? minimumQty : 0,
-      barcode,
-      description: description ? description : "",
-      imageUrl: imageUrl ? imageUrl : "",
-      price,
-      tax,
-      purchasePrice,
-      taxType,
-      profitMargin: profitMargin ? profitMargin : 0,
-      salesPrice,
-      finalPrice,
-      discountType: discountType ? discountType : "",
-      discount: discount ? discount : 0,
-      currentOpeningStock: currentOpeningStock ? currentOpeningStock : 0,
-    });
-
-    return res.status(201).send(createdProduct);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).send("Internal Server Error");
-  }
-};
+  },
+];
 
 // Get all products
 exports.getAllProducts = async (req, res) => {
@@ -114,36 +139,58 @@ exports.getProductById = async (req, res) => {
 };
 
 // Update a product by id
-exports.updateProductById = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const {
-      name,
-      brand,
-      category,
-      unit,
-      minimumQty,
-      barcode,
-      description,
-      imageUrl,
-      price,
-      tax,
-      purchasePrice,
-      taxType,
-      profitMargin,
-      salesPrice,
-      finalPrice,
-      discountType,
-      discount,
-      currentOpeningStock,
-    } = req.body;
+exports.updateProductById = [
+  upload.single("image"),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const {
+        name,
+        brand,
+        category,
+        unit,
+        minimumQty,
+        barcode,
+        description,
+        price,
+        tax,
+        purchasePrice,
+        taxType,
+        profitMargin,
+        salesPrice,
+        finalPrice,
+        discountType,
+        discount,
+        currentOpeningStock,
+      } = req.body;
 
-    const product = await Product.findByPk(id);
-    if (!product) {
-      return res.status(404).send("Product not found!");
-    }
+      const product = await Product.findByPk(id);
+      if (!product) {
+        return res.status(404).send("Product not found!");
+      }
 
-    if (product) {
+      // Handling file upload
+      if (req.file) {
+        // Save new image and delete the old one
+        const filename = req.file.filename;
+        const imageUrl = `/assets/products/${filename}`;
+        const oldImageUrl = product.imageUrl;
+
+        // Set new image URL
+        product.imageUrl = imageUrl;
+
+        // Delete old image file if it exists
+        if (oldImageUrl) {
+          const oldImagePath = path.join(__dirname, "..", oldImageUrl);
+          fs.unlink(oldImagePath, (err) => {
+            if (err) {
+              console.error("Failed to delete old image:", err);
+            }
+          });
+        }
+      }
+
+      // Update other fields
       name ? (product.name = name) : product.name;
       brand ? (product.brand = brand) : product.brand;
       category ? (product.category = category) : product.category;
@@ -151,7 +198,6 @@ exports.updateProductById = async (req, res) => {
       minimumQty ? (product.minimumQty = minimumQty) : product.minimumQty;
       barcode ? (product.barcode = barcode) : product.barcode;
       description ? (product.description = description) : product.description;
-      imageUrl ? (product.imageUrl = imageUrl) : product.imageUrl;
       price ? (product.price = price) : product.price;
       tax ? (product.tax = tax) : product.tax;
       purchasePrice
@@ -177,12 +223,12 @@ exports.updateProductById = async (req, res) => {
         message: "Product updated successfully",
         product: product,
       });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send("Internal Server Error");
     }
-  } catch (err) {
-    console.error(err);
-    return res.status(500).send("Internal Server Error");
-  }
-};
+  },
+];
 
 // Delete a product by id
 exports.deleteProductById = async (req, res) => {
@@ -193,6 +239,20 @@ exports.deleteProductById = async (req, res) => {
       return res.status(404).send("Product not found!");
     }
 
+    // Get the image URL from the product
+    const imageUrl = product.imageUrl;
+
+    // Delete the image file from the folder
+    if (imageUrl) {
+      const imagePath = path.join(__dirname, "..", imageUrl);
+      fs.unlink(imagePath, (err) => {
+        if (err) {
+          console.error("Failed to delete image:", err);
+        }
+      });
+    }
+
+    // Delete the product from the database
     await product.destroy();
 
     return res.status(200).send({
