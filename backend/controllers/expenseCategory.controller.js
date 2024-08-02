@@ -19,7 +19,7 @@ exports.createExpenseCategory = async (req, res) => {
 
     const expenseCategory = new ExpenseCategory({
       name,
-      description: description ? description : null,
+      description: description ? description : "",
     });
 
     const createdExpenseCategory = await expenseCategory.save();
