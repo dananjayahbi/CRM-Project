@@ -21,6 +21,7 @@ app.get("/", (req, res) => {
 app.use("/api/users", require("./routes/user.routes"));
 app.use("/api/customers", require("./routes/customer.routes"));
 app.use("/api/suppliers", require("./routes/supplier.routes"));
+app.use("/api/expenseCategories", require("./routes/expenseCategory.routes"));
 
 app.listen(PORT, () => {
   console.log("Server up with port : " + PORT);
