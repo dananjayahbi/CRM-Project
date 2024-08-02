@@ -21,6 +21,10 @@ const Purchase = sequelize.define(
             type: DataTypes.STRING,
             allowNull: false,
         },
+        products: {
+            type: DataTypes.JSON,
+            allowNull: false,
+        },
         grandTotal: {
             type: DataTypes.FLOAT,
             allowNull: false,

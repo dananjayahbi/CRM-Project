@@ -5,17 +5,23 @@ const userRoutes = require("./routes/user.routes");
 const customerRoutes = require("./routes/customer.routes");
 const supplierRoutes = require("./routes/supplier.routes");
 const purchaseRoutes = require("./routes/purchase.routes");
-const purchaseReturnRoutes = require("./routes/purchaseReturn.routes");
+// const purchaseReturnRoutes = require("./routes/purchaseReturn.routes");
 const expenseCategoryRoutes = require("./routes/expenseCategory.routes");
 const expenseRoutes = require("./routes/expense.routes");
 const brandsRoutes = require("./routes/brands.routes");
 const productsCategoryRoutes = require("./routes/productsCategory.routes");
 const unitsRoutes = require("./routes/units.routes");
 const paymentTypesRoutes = require("./routes/paymentTypes.routes");
+const taxRoutes = require("./routes/tax.routes");
+const productsRoutes = require("./routes/products.routes");
 
 dotenv.config();
 
 const app = express();
+const path = require('path');
+
+// Serve static files from the 'assets' directory
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -28,13 +34,15 @@ app.use("/api/users", userRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api/suppliers", supplierRoutes);
 app.use("/api/purchases", purchaseRoutes);
-app.use("/api/purchaseReturns", purchaseReturnRoutes);
+// app.use("/api/purchaseReturns", purchaseReturnRoutes);
 app.use("/api/expenseCategories", expenseCategoryRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/brands", brandsRoutes);
 app.use("/api/productsCategories", productsCategoryRoutes);
 app.use("/api/units", unitsRoutes);
 app.use("/api/paymentTypes", paymentTypesRoutes);
+app.use("/api/taxes", taxRoutes);
+app.use("/api/products", productsRoutes);
 
 const sequelize = require("./config/db.config");
 
