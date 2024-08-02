@@ -4,7 +4,7 @@ const dotenv = require("dotenv");
 const userRoutes = require("./routes/user.routes");
 const customerRoutes = require("./routes/customer.routes");
 const supplierRoutes = require("./routes/supplier.routes");
-// const purchaseRoutes = require("./routes/purchase.routes");
+const purchaseRoutes = require("./routes/purchase.routes");
 // const purchaseReturnRoutes = require("./routes/purchaseReturn.routes");
 const expenseCategoryRoutes = require("./routes/expenseCategory.routes");
 const expenseRoutes = require("./routes/expense.routes");
@@ -33,7 +33,7 @@ app.get("/", (req, res) => {
 app.use("/api/users", userRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api/suppliers", supplierRoutes);
-// app.use("/api/purchases", purchaseRoutes);
+app.use("/api/purchases", purchaseRoutes);
 // app.use("/api/purchaseReturns", purchaseReturnRoutes);
 app.use("/api/expenseCategories", expenseCategoryRoutes);
 app.use("/api/expenses", expenseRoutes);
