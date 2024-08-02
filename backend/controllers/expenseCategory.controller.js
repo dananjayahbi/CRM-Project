@@ -59,10 +59,6 @@ exports.updateExpenseCategory = async (req, res) => {
     const { id } = req.params;
     const { name, description } = req.body;
 
-    if (!name) {
-      return res.status(400).send("Expense category name is required");
-    }
-
     const expenseCategory = await ExpenseCategory.findById(id);
     if (!expenseCategory) {
       return res.status(404).send("Expense category not found");
