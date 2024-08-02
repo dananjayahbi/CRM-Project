@@ -29,6 +29,9 @@ exports.createExpenseCategory = async (req, res) => {
     });
   } catch (err) {
     console.error("Unable to connect to the database:", err);
+    res.status(500).send({
+      message: "Some error occurred while creating the expense category.",
+    });
   }
 };
 
