@@ -222,9 +222,8 @@ exports.updateUser = async (req, res) => {
 // Delete a user by id
 exports.deleteUser = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findByIdAndDelete(req.params.id);
     if (user) {
-      await user.remove();
       res.status(200).send("User deleted successfully");
     } else {
       res.status(404).send("User not found");
