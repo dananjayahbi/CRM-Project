@@ -27,6 +27,7 @@ app.use("/api/brands", require("./routes/brand.routes"));
 app.use("/api/taxes", require("./routes/tax.routes"));
 app.use("/api/units", require("./routes/unit.routes"));
 app.use("/api/paymentTypes", require("./routes/paymentType.routes"));
+app.use("/api/productsCategories", require("./routes/productCategory.routes"));
 
 app.listen(PORT, () => {
   console.log("Server up with port : " + PORT);
