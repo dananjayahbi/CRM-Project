@@ -18,12 +18,9 @@ const purchaseSchema = new Schema(
     },
     products: [
       {
-        productCode: {
-          type: String,
-          required: true,
-        },
-        productName: {
-          type: String,
+        productObjectId: {
+          type: Schema.Types.ObjectId,
+          ref: "Product",
           required: true,
         },
         quantity: {

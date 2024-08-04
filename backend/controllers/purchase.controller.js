@@ -64,64 +64,47 @@ exports.updatePurchase = async (req, res) => {
       });
     }
 
-    // If the products array provides a new product, then add it to the products array
-    if (products) {
-      products.forEach((product) => {
-        const index = purchase.products.findIndex(
-          (p) => p.productCode === product.productCode
-        );
-        if (index === -1) {
-          purchase.products.push(product);
-        } else {
-          purchase.products[index] = product;
-        }
-      });
-    }
+    // If the products array provides a new product, then add it to the products object array
+    products.forEach(newProduct => {
+      const existingProductIndex = purchase.products.findIndex(
+        p => p.productObjectId.toString() === newProduct.productObjectId
+      );
 
-    // If the products array provides an existing product, then update it
-    if (products) {
-      products.forEach((product) => {
-        const index = purchase.products.findIndex(
-          (p) => p.productCode === product.productCode
-        );
-        if (index !== -1) {
-          purchase.products[index] = product;
-        }
-      });
-    }
+      if (existingProductIndex === -1) {
+        // Add new product
+        purchase.products.push(newProduct);
+      } else {
+        // Update existing product
+        purchase.products[existingProductIndex] = {
+          ...purchase.products[existingProductIndex].toObject(),
+          ...newProduct,
+        };
+      }
+    });
 
     // If the provided products array misses a product that is in the database, it means that product is deleted
-    if (products) {
-      purchase.products.forEach((product) => {
-        const index = products.findIndex(
-          (p) => p.productCode === product.productCode
-        );
-        if (index === -1) {
-          purchase.products = purchase.products.filter(
-            (p) => p.productCode !== product.productCode
-          );
-        }
-      });
-    }
+    const updatedProductIds = products.map(p => p.productObjectId.toString());
+    purchase.products = purchase.products.filter(p =>
+      updatedProductIds.includes(p.productObjectId.toString())
+    );
 
-    if (purchase) {
-      supplier ? (purchase.supplier = supplier) : purchase.supplier;
-      purchaseDate
-        ? (purchase.purchaseDate = purchaseDate)
-        : purchase.purchaseDate;
-      products ? (purchase.products = products) : purchase.products;
-      status ? (purchase.status = status) : purchase.status;
-      grandTotal ? (purchase.grandTotal = grandTotal) : purchase.grandTotal;
+    // Update other fields
+    if (supplier) purchase.supplier = supplier;
+    if (purchaseDate) purchase.purchaseDate = purchaseDate;
+    if (status) purchase.status = status;
+    if (grandTotal) purchase.grandTotal = grandTotal;
 
-      const updatedPurchase = await purchase.save();
+    const updatedPurchase = await purchase.save();
 
-      return res.status(200).send({
-        message: "Purchase updated successfully",
-        purchase: updatedPurchase,
-      });
-    }
+    return res.status(200).send({
+      message: "Purchase updated successfully",
+      purchase: updatedPurchase,
+    });
   } catch (err) {
     console.error("Unable to connect to the database:", err);
+    res.status(500).send({
+      message: "Some error occurred while updating the purchase.",
+    });
   }
 };
 
