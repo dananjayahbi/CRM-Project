@@ -2,13 +2,14 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
-const purchaseSchema = new Schema(
+const salesSchema = new Schema(
   {
-    supplier: {
-      type: String,
+    customer: {
+      type: Schema.Types.ObjectId,
+      ref: "Customer",
       required: true,
     },
-    purchaseDate: {
+    saleDate: {
       type: Date,
       required: true,
     },
@@ -27,7 +28,7 @@ const purchaseSchema = new Schema(
           type: Number,
           required: true,
         },
-        purchasePrice: {
+        unitPrice: {
           type: Number,
           required: true,
         },
@@ -40,10 +41,6 @@ const purchaseSchema = new Schema(
           required: true,
         },
         taxAmount: {
-          type: Number,
-          required: true,
-        },
-        unitCost: {
           type: Number,
           required: true,
         },
@@ -63,6 +60,6 @@ const purchaseSchema = new Schema(
   }
 );
 
-const Purchase = mongoose.model("Purchase", purchaseSchema);
+const Sales = mongoose.model("Sales", salesSchema);
 
-module.exports = Purchase;
+module.exports = Sales;
