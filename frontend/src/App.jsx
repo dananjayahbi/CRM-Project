@@ -1,35 +1,66 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useEffect, useState } from "react";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import axios from "axios";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+  const location = useLocation();
+  const isLogged = window.sessionStorage.getItem("LoggedIn");
+  const Base_Backend_URL = "http://localhost:3000";
+
+  //-------------------------------------
+
+  //clear local storage
+  // window.sessionStorage.clear();
+
+  //force login
+  // window.sessionStorage.setItem("LoggedIn", true);
+
+  //-------------------------------------
+
+  //Check if any user in the database and if not create defaultAdmin
+  const createDefaultAdmin = async () => {
+    const response = await axios.get(
+      `${Base_Backend_URL}/api/users/getAllUsers`
+    );
+    if (response.status === 200) {
+      if (response.data.length === 0) {
+        const response = await axios.post(
+          `${Base_Backend_URL}/api/users/createDefaultAdmin`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (response.status === 201) {
+          console.log("Default Super-Admin Created");
+        } else {
+          console.log("Default Super-Admin already exists");
+        }
+      }
+    }
+  };
+
+  useEffect(() => {
+    createDefaultAdmin();
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <Routes>
+      {isLogged ? (
+        <>
+          <Route path="*" element={<Dashboard />} />
+        </>
+      ) : (
+        <>
+          <Route path="*" element={<Navigate to="/login" />} />
+        </>
+      )}
+      <Route path="/login" element={<Login />} />
+    </Routes>
+  );
+};
 
-export default App
+export default App;
