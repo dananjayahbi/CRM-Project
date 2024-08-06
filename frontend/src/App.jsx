@@ -12,9 +12,7 @@ const App = () => {
     token: {
       // Seed Token
       colorPrimary: "#4e97fd",
-
-      // Alias Token
-      colorBgContainer: "#fff",
+      colorBgElevated: "#444c67",
     },
   };
 

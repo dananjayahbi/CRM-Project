@@ -20,64 +20,64 @@ import {
   PercentageOutlined,
   DatabaseOutlined,
 } from "@ant-design/icons";
-import { Menu } from "antd";
+import { Menu, ConfigProvider } from "antd";
+import { useNavigate } from "react-router-dom";
 
-// Define the menu items
+const theme = {
+  token: {
+    // Seed Token
+    colorBgElevated: "#303548", // Sub-menus background color
+    colorBgSpotlight: "#303548", // Sidebar Tooltips background color
+  },
+};
+
+// Define the menu items with navigation paths
 const items = [
   {
     key: "1",
     icon: <AppstoreOutlined />,
     label: "Dashboard",
+    path: "/",
   },
   {
     key: "2",
     icon: <ShopOutlined />,
     label: "Sales",
     children: [
-      { key: "21", label: "Sales List", icon: <UnorderedListOutlined /> },
-      {
-        key: "22",
-        label: "Sales Return List",
-        icon: <UnorderedListOutlined />,
-      },
+      { key: "21", label: "Sales List", icon: <UnorderedListOutlined />, path: "/sales/list" },
+      { key: "22", label: "Sales Return List", icon: <UnorderedListOutlined />, path: "/sales/return-list" },
     ],
   },
   {
     key: "3",
     icon: <TeamOutlined />,
     label: "Customers",
+    path: "/customers",
   },
   {
     key: "4",
     icon: <ReconciliationOutlined />,
     label: "Purchase",
     children: [
-      { key: "41", label: "Purchase List", icon: <UnorderedListOutlined /> },
-      {
-        key: "42",
-        label: "Purchase Return List",
-        icon: <UnorderedListOutlined />,
-      },
+      { key: "41", label: "Purchase List", icon: <UnorderedListOutlined />, path: "/purchase/list" },
+      { key: "42", label: "Purchase Return List", icon: <UnorderedListOutlined />, path: "/purchase/return-list" },
     ],
   },
   {
     key: "5",
     icon: <UserSwitchOutlined />,
     label: "Suppliers",
+    path: "/suppliers",
   },
   {
     key: "6",
     icon: <ProductOutlined />,
     label: "Products",
     children: [
-      { key: "61", label: "Products List", icon: <UnorderedListOutlined /> },
-      {
-        key: "62",
-        label: "Product Categories",
-        icon: <UnorderedListOutlined />,
-      },
-      { key: "63", label: "Brands", icon: <OneToOneOutlined /> },
-      { key: "64", label: "Print Labels", icon: <BarcodeOutlined /> },
+      { key: "61", label: "Products List", icon: <UnorderedListOutlined />, path: "/products/list" },
+      { key: "62", label: "Product Categories", icon: <UnorderedListOutlined />, path: "/products/categories" },
+      { key: "63", label: "Brands", icon: <OneToOneOutlined />, path: "/products/brands" },
+      { key: "64", label: "Print Labels", icon: <BarcodeOutlined />, path: "/products/print-labels" },
     ],
   },
   {
@@ -85,12 +85,8 @@ const items = [
     icon: <CreditCardOutlined />,
     label: "Expenses",
     children: [
-      { key: "71", label: "Expenses List", icon: <UnorderedListOutlined /> },
-      {
-        key: "72",
-        label: "Expense Categories",
-        icon: <UnorderedListOutlined />,
-      },
+      { key: "71", label: "Expenses List", icon: <UnorderedListOutlined />, path: "/expenses/list" },
+      { key: "72", label: "Expense Categories", icon: <UnorderedListOutlined />, path: "/expenses/categories" },
     ],
   },
   {
@@ -98,37 +94,34 @@ const items = [
     icon: <AreaChartOutlined />,
     label: "Reports",
     children: [
-      { key: "81", label: "Profit & Loss Report", icon: <FileOutlined /> },
-      { key: "82", label: "Purchase Report", icon: <FileOutlined /> },
-      { key: "83", label: "Purchase Return Report", icon: <FileOutlined /> },
-      { key: "84", label: "Sales Report", icon: <FileOutlined /> },
-      { key: "85", label: "Sales Return Report", icon: <FileOutlined /> },
-      { key: "86", label: "Stock Report", icon: <FileOutlined /> },
-      { key: "87", label: "Expense Report", icon: <FileOutlined /> },
-      { key: "88", label: "Customer Report", icon: <FileOutlined /> },
-      { key: "89", label: "Supplier Report", icon: <FileOutlined /> },
+      { key: "81", label: "Profit & Loss Report", icon: <FileOutlined />, path: "/reports/profit-loss" },
+      { key: "82", label: "Purchase Report", icon: <FileOutlined />, path: "/reports/purchase" },
+      { key: "83", label: "Purchase Return Report", icon: <FileOutlined />, path: "/reports/purchase-return" },
+      { key: "84", label: "Sales Report", icon: <FileOutlined />, path: "/reports/sales" },
+      { key: "85", label: "Sales Return Report", icon: <FileOutlined />, path: "/reports/sales-return" },
+      { key: "86", label: "Stock Report", icon: <FileOutlined />, path: "/reports/stock" },
+      { key: "87", label: "Expense Report", icon: <FileOutlined />, path: "/reports/expense" },
+      { key: "88", label: "Customer Report", icon: <FileOutlined />, path: "/reports/customer" },
+      { key: "89", label: "Supplier Report", icon: <FileOutlined />, path: "/reports/supplier" },
     ],
   },
   {
     key: "9",
     icon: <UserOutlined />,
     label: "Users",
+    path: "/users",
   },
   {
     key: "10",
     icon: <SettingOutlined />,
     label: "Settings",
     children: [
-      {
-        key: "101",
-        label: "Company Profile",
-        icon: <FundProjectionScreenOutlined />,
-      },
-      { key: "102", label: "Site Settings", icon: <BranchesOutlined /> },
-      { key: "103", label: "Tax List", icon: <PercentageOutlined /> },
-      { key: "104", label: "Units List", icon: <MoneyCollectOutlined /> },
-      { key: "105", label: "Payment Types List", icon: <CreditCardOutlined /> },
-      { key: "106", label: "Database Backup", icon: <DatabaseOutlined /> },
+      { key: "101", label: "Company Profile", icon: <FundProjectionScreenOutlined />, path: "/settings/company-profile" },
+      { key: "102", label: "Site Settings", icon: <BranchesOutlined />, path: "/settings/site-settings" },
+      { key: "103", label: "Tax List", icon: <PercentageOutlined />, path: "/settings/tax-list" },
+      { key: "104", label: "Units List", icon: <MoneyCollectOutlined />, path: "/settings/units-list" },
+      { key: "105", label: "Payment Types List", icon: <CreditCardOutlined />, path: "/settings/payment-types-list" },
+      { key: "106", label: "Database Backup", icon: <DatabaseOutlined />, path: "/settings/database-backup" },
     ],
   },
 ];
@@ -153,6 +146,8 @@ const getLevelKeys = (items1) => {
 const levelKeys = getLevelKeys(items);
 
 const SideMenu = () => {
+  const navigate = useNavigate();
+
   // Retrieve selected key and open keys from session storage or use defaults
   const savedSelectedKey = sessionStorage.getItem("selectedKey") || "1";
   const savedOpenKeys = JSON.parse(sessionStorage.getItem("openKeys")) || [];
@@ -190,6 +185,7 @@ const SideMenu = () => {
 
   const handleSelect = ({ key }) => {
     setSelectedKey(key);
+
     const findOpenKeys = (items, key) => {
       for (const item of items) {
         if (item.key === key) return [key];
@@ -204,18 +200,52 @@ const SideMenu = () => {
     };
     const newOpenKeys = findOpenKeys(items, key);
     setStateOpenKeys(newOpenKeys);
+
+    // Navigate to the path associated with the selected key
+    const selectedItem = items.flatMap((item) =>
+      item.children ? [item, ...item.children] : [item]
+    ).find((item) => item.key === key);
+    if (selectedItem && selectedItem.path) {
+      navigate(selectedItem.path);
+    }
   };
 
   return (
-    <Menu
-      mode="inline"
-      selectedKeys={[selectedKey]} // Set the selected key
-      openKeys={stateOpenKeys} // Set the open keys
-      onOpenChange={onOpenChange}
-      onSelect={handleSelect} // Handle menu item selection
-      items={items}
-      style={{ height: "100vh", textAlign: "left" }}
-    />
+    <ConfigProvider theme={theme}>
+      <div
+        style={{
+          height: "80px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#303548",
+          margin: "0 1px 0 0"
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: "#334454",
+            width: "130px",
+            height: "50px",
+            borderRadius: "7px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <h1>The LOGO</h1>
+        </div>
+      </div>
+      <Menu
+        mode="inline"
+        selectedKeys={[selectedKey]} // Set the selected key
+        openKeys={stateOpenKeys} // Set the open keys
+        onOpenChange={onOpenChange}
+        onSelect={handleSelect} // Handle menu item selection
+        items={items}
+        style={{ height: "100vh", textAlign: "left" }}
+      />
+    </ConfigProvider>
   );
 };
 
