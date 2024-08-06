@@ -5,6 +5,8 @@ import Logo from "../assets/logo.png";
 
 const LoginMobile = () => {
   const createAdminCalled = useRef(false); // useRef to keep track of function call
+  const backgroundImage =
+    "https://images.pexels.com/photos/34577/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1";
 
   //Check if any user in the database and if not create defaultAdmin
   const createDefaultAdmin = async () => {
@@ -68,6 +70,9 @@ const LoginMobile = () => {
         justifyContent: "center",
         alignItems: "center",
         height: "100vh",
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
       }}
     >
       <div
@@ -77,6 +82,8 @@ const LoginMobile = () => {
           width: "400px",
           height: "500px",
           padding: "20px",
+          backgroundColor: "#fff",
+          margin: "0 10px",
         }}
       >
         <div
