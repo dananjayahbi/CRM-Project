@@ -15,6 +15,7 @@ const Login = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const createAdminCalled = useRef(false); // useRef to keep track of function call
 
+  // Change image every 10 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
@@ -165,7 +166,7 @@ const Login = () => {
                 </Button>
               </Form.Item>
             </Form>
-            <a href="/" style={{ color: "#1a73e8" }}>
+            <a href="/" style={{ color: "#1a73e8", fontFamily: "Roboto, sans-serif" }}>
               Forgot password?
             </a>
           </div>
