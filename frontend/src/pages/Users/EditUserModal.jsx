@@ -17,7 +17,7 @@ const EditUserModal = ({ visible, onCancel, onEdit, selectedUserId }) => {
         username: user.data.username,
         email: user.data.email,
         role: user.data.role,
-        isActive: user.data.isActive,
+        isActive: user.data.isActive.toString(),
       });
 
       console.log(user.data);
@@ -73,7 +73,6 @@ const EditUserModal = ({ visible, onCancel, onEdit, selectedUserId }) => {
           name="firstName"
           label="First Name"
           rules={[{ required: true, message: "Please input first name!" }]}
-          initialValue={selectedUserId.firstName}
         >
           <Input />
         </Form.Item>
@@ -81,7 +80,6 @@ const EditUserModal = ({ visible, onCancel, onEdit, selectedUserId }) => {
           name="lastName"
           label="Last Name"
           rules={[{ required: true, message: "Please input last name!" }]}
-          initialValue={selectedUserId.lastName}
         >
           <Input />
         </Form.Item>
@@ -89,7 +87,6 @@ const EditUserModal = ({ visible, onCancel, onEdit, selectedUserId }) => {
           name="username"
           label="Username"
           rules={[{ required: true, message: "Please input username!" }]}
-          initialValue={selectedUserId.username}
         >
           <Input />
         </Form.Item>
@@ -97,7 +94,6 @@ const EditUserModal = ({ visible, onCancel, onEdit, selectedUserId }) => {
           name="email"
           label="Email"
           rules={[{ required: true, message: "Please input email!" }]}
-          initialValue={selectedUserId.email}
         >
           <Input />
         </Form.Item>
@@ -105,7 +101,6 @@ const EditUserModal = ({ visible, onCancel, onEdit, selectedUserId }) => {
           name="role"
           label="Role"
           rules={[{ required: true, message: "Please select a role!" }]}
-          initialValue={selectedUserId.role}
         >
           <Select>
             <Select.Option value="staff">Staff</Select.Option>
@@ -117,11 +112,10 @@ const EditUserModal = ({ visible, onCancel, onEdit, selectedUserId }) => {
           name="isActive"
           label="Status"
           rules={[{ required: true, message: "Please select a status!" }]}
-          initialValue={selectedUserId.isActive}
         >
           <Select>
-            <Select.Option value={true}>Active</Select.Option>
-            <Select.Option value={false}>Inactive</Select.Option>
+            <Select.Option value="true">Active</Select.Option>
+            <Select.Option value="false">Inactive</Select.Option>
           </Select>
         </Form.Item>
       </Form>

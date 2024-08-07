@@ -8,6 +8,8 @@ import {
   Input,
   Select,
   Spin,
+  Avatar,
+  Badge,
 } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
@@ -141,12 +143,16 @@ const Users = () => {
       dataIndex: "profilePicture",
       key: "profilePicture",
       width: 70,
-      render: (text) => (
-        <img
-          src={text}
-          alt="Profile"
-          style={{ width: 50, height: 50, borderRadius: "50%" }}
-        />
+      render: (text, record) => (
+        <Badge
+          count={record.isActive ? "Active" : "Inactive"}
+          style={{ backgroundColor: record.isActive ? "#52c41a" : "#f5222d" }}
+        >
+          <Avatar
+            src={text}
+            style={{ width: 50, height: 50, borderRadius: "50%" }}
+          />
+        </Badge>
       ),
     },
     {
