@@ -1,6 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { Space, Table, Tag, Button, ConfigProvider, Input, Select } from "antd";
+import {
+  Space,
+  Table,
+  Tag,
+  Button,
+  ConfigProvider,
+  Input,
+  Select,
+  Spin,
+} from "antd";
+import { LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
+import NewUserModal from "./NewUserModal";
+import EditUserModal from "./EditUserModal";
+import DeleteUserModal from "./DeleteUserModal";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -10,6 +23,10 @@ const Users = () => {
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
   const [filterRoles, setFilterRoles] = useState([]);
+  const [newUserModalVisible, setNewUserModalVisible] = useState(false);
+  const [editUserModalVisible, setEditUserModalVisible] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState({});
+  const [deleteUserModalVisible, setDeleteUserModalVisible] = useState(false);
 
   const theme = {
     components: {
@@ -47,17 +64,53 @@ const Users = () => {
 
   // Handle New User Button
   const handleNewUser = () => {
-    console.log("New User");
+    setNewUserModalVisible(true);
+  };
+
+  // Close New User Modal
+  const handleCancelNewUser = () => {
+    setNewUserModalVisible(false);
+  };
+
+  // On Add New User
+  const handleNewUserAdd = () => {
+    setNewUserModalVisible(false);
+    fetchUsers();
   };
 
   // Handle Edit User Button
   const handleEditUser = (record) => {
-    console.log("Edit User", record);
+    setSelectedUserId(record._id);
+    setEditUserModalVisible(true);
+  };
+
+  // Close Edit User Modal
+  const handleCancelEditUser = () => {
+    setEditUserModalVisible(false);
+    setSelectedUserId({});
+  };
+
+  // On Edit User
+  const handleEditUserSave = () => {
+    setEditUserModalVisible(false);
+    fetchUsers();
   };
 
   // Handle Delete User Button
   const handleDeleteUser = (record) => {
-    console.log("Delete User", record);
+    setSelectedUserId(record._id);
+    setDeleteUserModalVisible(true);
+  };
+
+  // Close Delete User Modal
+  const handleCancelDeleteUser = () => {
+    setDeleteUserModalVisible(false);
+  };
+
+  // On Delete User
+  const handleDeleteUserSave = () => {
+    setDeleteUserModalVisible(false);
+    fetchUsers();
   };
 
   // Search Functionality
@@ -158,43 +211,81 @@ const Users = () => {
   ];
 
   return (
-    <div style={{ margin: "-40px 0 0 0" }}>
-      <p style={{ textAlign: "left", fontSize: "30px", fontWeight: 500 }}>
-        Users List
-      </p>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
-        <Button type="primary" onClick={handleNewUser}>
-          New User
-        </Button>
-        <div style={{ display: "flex", gap: "10px" }}>
-          <Search
-            placeholder="Search users"
-            onSearch={handleSearch}
-            onChange={(e) => handleSearch(e.target.value)}
-            style={{ width: 200 }}
-          />
-          <Select
-            mode="multiple"
-            placeholder="Filter by role"
-            onChange={handleFilterRole}
-            allowClear
-            style={{ width: 200 }}
-          >
-            <Option value="admin">Admin</Option>
-            <Option value="superAdmin">Super Admin</Option>
-            <Option value="staff">Staff</Option>
-          </Select>
+    <>
+      {loading ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "300px",
+          }}
+        >
+          <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
         </div>
-      </div>
-      <ConfigProvider theme={theme}>
-        <Table
-          columns={columns}
-          dataSource={filteredAndSearchedUsers}
-          loading={loading}
-          rowKey="_id"
-        />
-      </ConfigProvider>
-    </div>
+      ) : (
+        <div style={{ margin: "-40px 0 0 0" }}>
+          <p style={{ textAlign: "left", fontSize: "30px", fontWeight: 500 }}>
+            Users List
+          </p>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: "10px",
+            }}
+          >
+            <Button type="primary" onClick={handleNewUser}>
+              New User
+            </Button>
+            <div style={{ display: "flex", gap: "10px" }}>
+              <Search
+                placeholder="Search users"
+                onSearch={handleSearch}
+                onChange={(e) => handleSearch(e.target.value)}
+                style={{ width: 200 }}
+              />
+              <Select
+                mode="multiple"
+                placeholder="Filter by role"
+                onChange={handleFilterRole}
+                allowClear
+                style={{ width: 200 }}
+              >
+                <Option value="admin">Admin</Option>
+                <Option value="superAdmin">Super Admin</Option>
+                <Option value="staff">Staff</Option>
+              </Select>
+            </div>
+          </div>
+          <ConfigProvider theme={theme}>
+            <Table
+              columns={columns}
+              dataSource={filteredAndSearchedUsers}
+              loading={loading}
+              rowKey="_id"
+            />
+          </ConfigProvider>
+          <NewUserModal
+            visible={newUserModalVisible}
+            onCancel={handleCancelNewUser}
+            onAdd={handleNewUserAdd}
+          />
+          <EditUserModal
+            visible={editUserModalVisible}
+            onCancel={handleCancelEditUser}
+            onEdit={handleEditUserSave}
+            selectedUserId={selectedUserId}
+          />
+          <DeleteUserModal
+            visible={deleteUserModalVisible}
+            onCancel={handleCancelDeleteUser}
+            onDelete={handleDeleteUserSave}
+            selectedUserId={selectedUserId}
+          />
+        </div>
+      )}
+    </>
   );
 };
 

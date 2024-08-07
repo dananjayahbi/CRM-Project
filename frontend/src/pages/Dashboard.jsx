@@ -12,6 +12,7 @@ const theme = {
     // Alias Token
     colorBgContainer: "#303548",
     colorTextBase: "#fff",
+    colorBgElevated: "#444c67",
   },
 };
 

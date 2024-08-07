@@ -73,7 +73,7 @@ exports.createUser = async (req, res) => {
       password: hashedPassword,
       role,
       mobile,
-      profilePicture,
+      profilePicture : profilePicture ? profilePicture : "",
       isActive: true,
     });
 
