@@ -25,6 +25,7 @@ const Users = () => {
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
   const [filterRoles, setFilterRoles] = useState([]);
+  const [filterStatus, setFilterStatus] = useState([]);
   const [newUserModalVisible, setNewUserModalVisible] = useState(false);
   const [editUserModalVisible, setEditUserModalVisible] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState({});
@@ -120,9 +121,14 @@ const Users = () => {
     setSearchText(value.toLowerCase());
   };
 
-  // Filter Functionality
+  // Filter by Role Functionality
   const handleFilterRole = (value) => {
     setFilterRoles(value);
+  };
+
+  // Filter by Status Functionality
+  const handleFilterStatus = (value) => {
+    setFilterStatus(value);
   };
 
   // Filter and search users
@@ -134,7 +140,11 @@ const Users = () => {
       user.email.toLowerCase().includes(searchText);
     const matchesFilterRole =
       filterRoles.length > 0 ? filterRoles.includes(user.role) : true;
-    return matchesSearchText && matchesFilterRole;
+    const matchesFilterStatus =
+      filterStatus.length > 0
+        ? filterStatus.includes(user.isActive.toString())
+        : true;
+    return matchesSearchText && matchesFilterRole && matchesFilterStatus;
   });
 
   const columns = [
@@ -149,7 +159,7 @@ const Users = () => {
           style={{ backgroundColor: record.isActive ? "#52c41a" : "#f5222d" }}
         >
           <Avatar
-            src={text}
+            src={"http://localhost:3000" + text}
             style={{ width: 50, height: 50, borderRadius: "50%" }}
           />
         </Badge>
@@ -261,6 +271,16 @@ const Users = () => {
                 <Option value="admin">Admin</Option>
                 <Option value="superAdmin">Super Admin</Option>
                 <Option value="staff">Staff</Option>
+              </Select>
+              <Select
+                mode="multiple"
+                placeholder="Filter by status"
+                onChange={handleFilterStatus}
+                allowClear
+                style={{ width: 200 }}
+              >
+                <Option value="true">Active</Option>
+                <Option value="false">Inactive</Option>
               </Select>
             </div>
           </div>

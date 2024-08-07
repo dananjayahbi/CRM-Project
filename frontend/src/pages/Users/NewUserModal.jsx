@@ -1,17 +1,34 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { Modal, Form, Input, Button, Upload, message, Select } from "antd";
+import { UploadOutlined } from "@ant-design/icons";
 
 const NewUserModal = ({ visible, onCancel, onAdd }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [fileList, setFileList] = useState([]);
 
   const handleAdd = async (values) => {
     setLoading(true);
     try {
-      await axios.post("http://localhost:3000/api/users/createUser", values);
+      const formData = new FormData();
+      Object.keys(values).forEach(key => {
+        formData.append(key, values[key]);
+      });
+
+      if (fileList.length > 0) {
+        formData.append("profilePicture", fileList[0].originFileObj);
+      }
+
+      await axios.post("http://localhost:3000/api/users/createUser", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
       onAdd();
       form.resetFields();
+      setFileList([]);
       onCancel();
       message.success("User added successfully.");
     } catch (error) {
@@ -21,6 +38,8 @@ const NewUserModal = ({ visible, onCancel, onAdd }) => {
       setLoading(false);
     }
   };
+
+  const handleFileChange = ({ fileList }) => setFileList(fileList);
 
   return (
     <Modal
@@ -94,6 +113,19 @@ const NewUserModal = ({ visible, onCancel, onAdd }) => {
           rules={[{ required: true, message: "Please input mobile!" }]}
         >
           <Input />
+        </Form.Item>
+        <Form.Item
+          name="profilePicture"
+          label="Profile Picture"
+        >
+          <Upload
+            listType="picture"
+            fileList={fileList}
+            beforeUpload={() => false}
+            onChange={handleFileChange}
+          >
+            <Button icon={<UploadOutlined />}>Upload Profile Picture</Button>
+          </Upload>
         </Form.Item>
       </Form>
     </Modal>
