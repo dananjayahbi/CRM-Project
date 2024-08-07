@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Space, Table, Tag, Button, ConfigProvider } from "antd";
+import { Space, Table, Tag, Button, ConfigProvider, Input, Select } from "antd";
 import axios from "axios";
+
+const { Search } = Input;
+const { Option } = Select;
 
 const Users = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchText, setSearchText] = useState("");
+  const [filterRoles, setFilterRoles] = useState([]);
 
   const theme = {
     components: {
@@ -54,6 +59,28 @@ const Users = () => {
   const handleDeleteUser = (record) => {
     console.log("Delete User", record);
   };
+
+  // Search Functionality
+  const handleSearch = (value) => {
+    setSearchText(value.toLowerCase());
+  };
+
+  // Filter Functionality
+  const handleFilterRole = (value) => {
+    setFilterRoles(value);
+  };
+
+  // Filter and search users
+  const filteredAndSearchedUsers = users.filter((user) => {
+    const matchesSearchText =
+      user.name.toLowerCase().includes(searchText) ||
+      user.username.toLowerCase().includes(searchText) ||
+      user.mobile.toLowerCase().includes(searchText) ||
+      user.email.toLowerCase().includes(searchText);
+    const matchesFilterRole =
+      filterRoles.length > 0 ? filterRoles.includes(user.role) : true;
+    return matchesSearchText && matchesFilterRole;
+  });
 
   const columns = [
     {
@@ -135,17 +162,34 @@ const Users = () => {
       <p style={{ textAlign: "left", fontSize: "30px", fontWeight: 500 }}>
         Users List
       </p>
-      <Button
-        type="primary"
-        style={{ float: "right", marginBottom: "10px" }}
-        onClick={handleNewUser}
-      >
-        New User
-      </Button>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
+        <Button type="primary" onClick={handleNewUser}>
+          New User
+        </Button>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <Search
+            placeholder="Search users"
+            onSearch={handleSearch}
+            onChange={(e) => handleSearch(e.target.value)}
+            style={{ width: 200 }}
+          />
+          <Select
+            mode="multiple"
+            placeholder="Filter by role"
+            onChange={handleFilterRole}
+            allowClear
+            style={{ width: 200 }}
+          >
+            <Option value="admin">Admin</Option>
+            <Option value="superAdmin">Super Admin</Option>
+            <Option value="staff">Staff</Option>
+          </Select>
+        </div>
+      </div>
       <ConfigProvider theme={theme}>
         <Table
           columns={columns}
-          dataSource={users}
+          dataSource={filteredAndSearchedUsers}
           loading={loading}
           rowKey="_id"
         />
