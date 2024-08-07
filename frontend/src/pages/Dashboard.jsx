@@ -16,7 +16,7 @@ const theme = {
 };
 
 const headerStyle = {
-  color: "#fff",
+  color: "#111",
   height: 80,
   lineHeight: "64px",
   padding: "0 25px 0 0",
@@ -29,13 +29,13 @@ const contentStyle = {
   textAlign: "center",
   minHeight: 120,
   lineHeight: "120px",
-  color: "#fff",
+  color: "#111",
   backgroundColor: "#f6f7fb",
 };
 const siderStyle = {
   textAlign: "center",
   lineHeight: "120px",
-  color: "#fff",
+  color: "#111",
   backgroundColor: "#000",
 };
 const layoutStyle = {

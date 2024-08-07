@@ -13,6 +13,7 @@ const App = () => {
       // Seed Token
       colorPrimary: "#4e97fd",
       colorBgElevated: "#444c67",
+      colorTextBase: "#000",
     },
   };
 
