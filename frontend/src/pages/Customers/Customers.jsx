@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Space, Table, Button, ConfigProvider, Input, Spin } from "antd";
-import { LoadingOutlined } from "@ant-design/icons";
+import {
+  LoadingOutlined,
+} from "@ant-design/icons";
 import axios from "axios";
 import NewCustomerModal from "./NewCustomerModal";
 import EditCustomerModal from "./EditCustomerModal";
@@ -9,6 +11,7 @@ import DeleteCustomerModal from "./DeleteCustomerModal";
 const { Search } = Input;
 
 const Customers = () => {
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
@@ -26,6 +29,13 @@ const Customers = () => {
       },
     },
   };
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Fetch all customers from the server
   const fetchCustomers = async () => {
@@ -122,21 +132,25 @@ const Customers = () => {
       title: "Email",
       dataIndex: "email",
       key: "email",
+      responsive: ["md"],
     },
     {
       title: "Mobile",
       dataIndex: "mobile",
       key: "mobile",
+      responsive: ["md"],
     },
     {
       title: "Address",
       dataIndex: "address",
       key: "address",
+      responsive: ["md"],
     },
     {
       title: "NIC",
       dataIndex: "nic",
       key: "nic",
+      responsive: ["md"],
     },
     {
       title: "Action",
@@ -156,8 +170,38 @@ const Customers = () => {
           </Button>
         </Space>
       ),
+      responsive: ["lg"],
     },
   ];
+
+  const expandedRowRender = (record) => (
+    <div>
+      <p>
+        <b>Email:</b> {record.email}
+      </p>
+      <p>
+        <b>Mobile:</b> {record.mobile}
+      </p>
+      <p>
+        <b>Address:</b> {record.address}
+      </p>
+      <p>
+        <b>NIC:</b> {record.nic}
+      </p>
+      <Space size="middle" style={{ marginTop: "10px" }}>
+        <Button type="primary" onClick={() => handleEditCustomer(record)}>
+          Edit
+        </Button>
+        <Button
+          danger
+          onClick={() => handleDeleteCustomer(record)}
+          style={{ marginLeft: "-10px" }}
+        >
+          Delete
+        </Button>
+      </Space>
+    </div>
+  );
 
   return (
     <>
@@ -209,12 +253,19 @@ const Customers = () => {
             </p>
           </div>
           <ConfigProvider theme={theme}>
-            <Table
-              columns={columns}
-              dataSource={filteredCustomers}
-              loading={loading}
-              rowKey="_id"
-            />
+            <div style={{ maxWidth: "100%", overflowX: "auto" }}>
+              <Table
+                columns={columns}
+                dataSource={filteredCustomers}
+                loading={loading}
+                expandable={{
+                  expandedRowRender: expandedRowRender,
+                  rowExpandable: (record) =>
+                    windowWidth < 1000 && record.name !== "Not Expandable",
+                }}
+                rowKey="_id"
+              />
+            </div>
           </ConfigProvider>
           <NewCustomerModal
             visible={newCustomerModalVisible}
