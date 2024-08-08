@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const path = require('path');
 
 //Setting up the server
 dotenv.config();
@@ -12,6 +13,9 @@ const DbURL = process.env.MONGO_URI;
 
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from the 'assets' directory
+app.use('/assets/users', express.static(path.join(__dirname, './assets/users')));
 
 //Setting up routing
 app.get("/", (req, res) => {

@@ -56,14 +56,13 @@ exports.getAllCustomers = async (req, res) => {
 // Get a customer by id
 exports.getCustomerById = async (req, res) => {
   try {
-    const { id } = req.params;
-    const customer = await Customer.findById(id);
+    const customer = await Customer.findById(req.params.id);
     if (!customer) {
       return res.status(404).send("Customer not found");
     }
     res.status(200).send(customer);
   } catch (err) {
-    console.error("Unable to connect to the database:", err);
+    console.error("Something went wrong! :", err);
   }
 };
 
@@ -97,11 +96,11 @@ exports.updateCustomer = async (req, res) => {
     }
 
     if (customer) {
-      name ? (customer.name = name) : customer.name;
-      email ? (customer.email = email) : customer.email;
-      mobile ? (customer.mobile = mobile) : customer.mobile;
-      address ? (customer.address = address) : customer.address;
-      nic ? (customer.nic = nic) : customer.nic;
+      customer.name = name || customer.name;
+      customer.email = email || customer.email;
+      customer.mobile = mobile || customer.mobile;
+      customer.address = address !== undefined ? address : customer.address;
+      customer.nic = nic !== undefined ? nic : customer.nic;
 
       const updatedCustomer = await customer.save();
 

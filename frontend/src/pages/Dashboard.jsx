@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import { Layout, Button, ConfigProvider, Menu, Dropdown } from "antd";
 const { Header, Footer, Sider, Content } = Layout;
 import SideMenu from "../components/SideMenu";
 import DashboardContent from "../pages/DashboardContent";
-import Users from "../pages/Users";
+import Users from "../pages/Users/Users";
+import Customers from "./Customers/Customers";
 
 const theme = {
   token: {
     // Alias Token
     colorBgContainer: "#303548",
     colorTextBase: "#fff",
+    colorBgElevated: "#444c67",
   },
 };
 
@@ -31,6 +33,7 @@ const contentStyle = {
   lineHeight: "120px",
   color: "#111",
   backgroundColor: "#f6f7fb",
+  margin: "20px",
 };
 const siderStyle = {
   textAlign: "center",
@@ -80,71 +83,76 @@ const Dashboard = () => {
   );
 
   return (
-    <ConfigProvider theme={theme}>
+    <>
       <Layout style={layoutStyle}>
-        {/* The side Menu */}
-        <Sider
-          width={width < 1000 ? "250px" : "18%"}
-          trigger={null}
-          collapsible
-          collapsed={collapsed}
-          style={siderStyle}
-        >
-          <SideMenu />
-        </Sider>
+        <ConfigProvider theme={theme}>
+          {/* The side Menu */}
+          <Sider
+            width={width < 1000 ? "250px" : "18%"}
+            trigger={null}
+            collapsible
+            collapsed={collapsed}
+            style={siderStyle}
+          >
+            <SideMenu />
+          </Sider>
+        </ConfigProvider>
         <Layout>
-          {/* The Header */}
-          <Header style={headerStyle}>
-            <Button
-              type="text"
-              icon={
-                collapsed ? (
-                  <MenuUnfoldOutlined style={{ color: "#000" }} />
-                ) : (
-                  <MenuFoldOutlined style={{ color: "#000" }} />
-                )
-              }
-              onClick={() => setCollapsed(!collapsed)}
-              style={{
-                fontSize: "16px",
-                width: 64,
-                height: 64,
-              }}
-            />
-            <Dropdown overlay={menu} trigger={["click"]}>
-              <div
+          <ConfigProvider theme={theme}>
+            {/* The Header */}
+            <Header style={headerStyle}>
+              <Button
+                type="text"
+                icon={
+                  collapsed ? (
+                    <MenuUnfoldOutlined style={{ color: "#000" }} />
+                  ) : (
+                    <MenuFoldOutlined style={{ color: "#000" }} />
+                  )
+                }
+                onClick={() => setCollapsed(!collapsed)}
                 style={{
-                  display: !collapsed && width < 1000 ? "none" : "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  cursor: "pointer",
+                  fontSize: "16px",
+                  width: 64,
+                  height: 64,
                 }}
-              >
-                <img
-                  src="https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI="
-                  alt="Profile Image"
-                  width={40}
-                  height={40}
+              />
+              <Dropdown overlay={menu} trigger={["click"]}>
+                <div
                   style={{
-                    borderRadius: "50%",
-                    marginRight: 10,
+                    display: !collapsed && width < 1000 ? "none" : "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    cursor: "pointer",
                   }}
-                />
-              </div>
-            </Dropdown>
-          </Header>
+                >
+                  <img
+                    src="https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI="
+                    alt="Profile Image"
+                    width={40}
+                    height={40}
+                    style={{
+                      borderRadius: "50%",
+                      marginRight: 10,
+                    }}
+                  />
+                </div>
+              </Dropdown>
+            </Header>
+          </ConfigProvider>
           {/* The Content (Routes for the inner pages)*/}
           <Content style={contentStyle}>
             <Routes>
               <Route path="/" element={<DashboardContent />} />
               <Route path="/users" element={<Users />} />
+              <Route path="/customers" element={<Customers />} />
             </Routes>
           </Content>
           {/* The Footer */}
           <Footer style={footerStyle}>Footer</Footer>
         </Layout>
       </Layout>
-    </ConfigProvider>
+    </>
   );
 };
 

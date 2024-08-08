@@ -1,6 +1,22 @@
+const path = require("path");
+const { v4: uuidv4 } = require("uuid");
+const multer = require("multer");
 const User = require("../models/User.model");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const fs = require('fs');
+
+// Set up multer for file handling
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, "../assets/users"));
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = `${uuidv4()}${path.extname(file.originalname)}`;
+    cb(null, uniqueName);
+  },
+});
+const upload = multer({ storage });
 
 // Create the default super-admin user
 exports.createDefaultAdmin = async (req, res) => {
@@ -29,59 +45,61 @@ exports.createDefaultAdmin = async (req, res) => {
   }
 };
 
-// Create a new user
-exports.createUser = async (req, res) => {
-  try {
-    const {
-      firstName,
-      lastName,
-      username,
-      email,
-      password,
-      role,
-      mobile,
-      profilePicture,
-    } = req.body;
+exports.createUser = [
+  upload.single("profilePicture"),
+  async (req, res) => {
+    try {
+      const { firstName, lastName, username, email, password, role, mobile } =
+        req.body;
 
-    if (
-      !firstName ||
-      !lastName ||
-      !username ||
-      !email ||
-      !password ||
-      !role ||
-      !mobile
-    ) {
-      return res.status(400).send("All fields are required");
+      if (
+        !firstName ||
+        !lastName ||
+        !username ||
+        !email ||
+        !password ||
+        !role ||
+        !mobile
+      ) {
+        return res.status(400).send("All fields are required");
+      }
+
+      // Find if any user already exists with the provided email
+      const existing = await User.findOne({ email });
+      if (existing) {
+        return res
+          .status(400)
+          .send("User already exists with the provided email");
+      }
+
+      // Handling file upload
+      let profilePictureUrl = "";
+      if (req.file) {
+        const filename = req.file.filename;
+        profilePictureUrl = `/assets/users/${filename}`;
+      }
+
+      // Hash the password
+      const hashedPassword = await bcrypt.hash(password, 10);
+      await User.create({
+        firstName,
+        lastName,
+        username,
+        email,
+        password: hashedPassword,
+        role,
+        mobile,
+        profilePicture: profilePictureUrl,
+        isActive: true,
+      });
+
+      res.status(201).send("User created successfully");
+    } catch (err) {
+      console.error("Unable to connect to the database:", err);
+      res.status(500).send("Internal Server Error");
     }
-
-    // Find if any user already exists with the provided email
-    const existing = await User.findOne({ email });
-    if (existing) {
-      return res
-        .status(400)
-        .send("User already exists with the provided email");
-    }
-
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-    await User.create({
-      firstName,
-      lastName,
-      username,
-      email,
-      password: hashedPassword,
-      role,
-      mobile,
-      profilePicture,
-      isActive: true,
-    });
-
-    res.status(201).send("User created successfully");
-  } catch (err) {
-    console.error("Unable to connect to the database:", err);
-  }
-};
+  },
+];
 
 // Login user
 exports.loginUser = async (req, res) => {
@@ -175,55 +193,87 @@ exports.getUserById = async (req, res) => {
 };
 
 // Update a user by id
-exports.updateUser = async (req, res) => {
-  try {
-    const {
-      firstName,
-      lastName,
-      username,
-      email,
-      password,
-      role,
-      mobile,
-      profilePicture,
-      isActive,
-    } = req.body;
-    const user = await User.findById(req.params.id);
+exports.updateUser = [
+  upload.single("profilePicture"),
+  async (req, res) => {
+    try {
+      const {
+        firstName,
+        lastName,
+        username,
+        email,
+        password,
+        role,
+        mobile,
+        isActive,
+      } = req.body;
 
-    if (user) {
-      firstName ? (user.firstName = firstName) : user.firstName;
-      lastName ? (user.lastName = lastName) : user.lastName;
-      username ? (user.username = username) : user.username;
-      email ? (user.email = email) : user.email;
-      role ? (user.role = role) : user.role;
-      mobile ? (user.mobile = mobile) : user.mobile;
-      profilePicture
-        ? (user.profilePicture = profilePicture)
-        : user.profilePicture;
-      isActive ? (user.isActive = isActive) : user.isActive;
+      const user = await User.findById(req.params.id);
 
-      if (password) {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        user.password = hashedPassword;
+      if (user) {
+        // Update user details
+        firstName ? (user.firstName = firstName) : user.firstName;
+        lastName ? (user.lastName = lastName) : user.lastName;
+        username ? (user.username = username) : user.username;
+        email ? (user.email = email) : user.email;
+        role ? (user.role = role) : user.role;
+        mobile ? (user.mobile = mobile) : user.mobile;
+        isActive ? (user.isActive = isActive) : user.isActive;
+
+        if (password) {
+          const hashedPassword = await bcrypt.hash(password, 10);
+          user.password = hashedPassword;
+        }
+
+        // Handle profile picture update
+        if (req.file) {
+          // Remove the old profile picture if it exists
+          if (user.profilePicture) {
+            const oldFilePath = path.join(__dirname, "../assets/users", path.basename(user.profilePicture));
+            fs.unlink(oldFilePath, (err) => {
+              if (err) {
+                console.error("Error deleting old profile picture:", err);
+              }
+            });
+          }
+
+          // Save new profile picture
+          const filename = req.file.filename;
+          user.profilePicture = `/assets/users/${filename}`;
+        }
+
+        await user.save();
+        res.status(200).json({ message: "User updated successfully", user });
+      } else {
+        res.status(404).send("User not found");
       }
-
-      await user.save();
-      res.status(200).json({ message: "User updated successfully", user });
-    } else {
-      res.status(404).send("User not found");
+    } catch (err) {
+      res.status(500).send(err.message);
     }
-  } catch (err) {
-    res.status(500).send(err.message);
-  }
-};
+  },
+];
 
 //Todo : Password reset
 
 // Delete a user by id
 exports.deleteUser = async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(req.params.id);
+    // Find the user by ID
+    const user = await User.findById(req.params.id);
+    
     if (user) {
+      // Remove the profile picture if it exists
+      if (user.profilePicture) {
+        const filePath = path.join(__dirname, "../assets/users", path.basename(user.profilePicture));
+        fs.unlink(filePath, (err) => {
+          if (err) {
+            console.error("Error deleting profile picture:", err);
+          }
+        });
+      }
+      
+      // Delete the user record
+      await User.findByIdAndDelete(req.params.id);
       res.status(200).send("User deleted successfully");
     } else {
       res.status(404).send("User not found");
