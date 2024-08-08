@@ -13,6 +13,7 @@ const EditUserModal = ({ visible, onCancel, onEdit, selectedUserId }) => {
       const user = await axios.get(
         `http://localhost:3000/api/users/getUserById/${selectedUserId}`
       );
+
       const {
         firstName,
         lastName,
@@ -49,8 +50,10 @@ const EditUserModal = ({ visible, onCancel, onEdit, selectedUserId }) => {
   };
 
   useEffect(() => {
-    fetchUser();
-  }, [selectedUserId]);
+    if (selectedUserId && visible) {
+      fetchUser();
+    }
+  }, [selectedUserId, visible]);
 
   const handleEdit = async (values) => {
     setLoading(true);

@@ -96,6 +96,7 @@ const Users = () => {
   // On Edit User
   const handleEditUserSave = () => {
     setEditUserModalVisible(false);
+    setSelectedUserId({});
     fetchUsers();
   };
 
@@ -283,6 +284,11 @@ const Users = () => {
                 <Option value="false">Inactive</Option>
               </Select>
             </div>
+          </div>
+          <div>
+            <p style={{ margin: "-50px 0", textAlign: "left" }}>
+              Total Users: {filteredAndSearchedUsers.length}
+            </p>
           </div>
           <ConfigProvider theme={theme}>
             <Table

@@ -6,6 +6,7 @@ const { Header, Footer, Sider, Content } = Layout;
 import SideMenu from "../components/SideMenu";
 import DashboardContent from "../pages/DashboardContent";
 import Users from "../pages/Users/Users";
+import Customers from "./Customers/Customers";
 
 const theme = {
   token: {
@@ -144,6 +145,7 @@ const Dashboard = () => {
             <Routes>
               <Route path="/" element={<DashboardContent />} />
               <Route path="/users" element={<Users />} />
+              <Route path="/customers" element={<Customers />} />
             </Routes>
           </Content>
           {/* The Footer */}
