@@ -93,10 +93,10 @@ exports.updateSupplier = async (req, res) => {
     }
 
     if (supplier) {
-      name ? (supplier.name = name) : supplier.name;
-      email ? (supplier.email = email) : supplier.email;
-      mobile ? (supplier.mobile = mobile) : supplier.mobile;
-      address ? (supplier.address = address) : supplier.address;
+      supplier.name = name || supplier.name;
+      supplier.email = email || supplier.email;
+      supplier.mobile = mobile || supplier.mobile;
+      supplier.address = address !== undefined ? address : supplier.address;
 
       const updatedSupplier = await supplier.save();
 

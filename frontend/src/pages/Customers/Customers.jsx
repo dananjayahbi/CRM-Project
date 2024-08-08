@@ -1,16 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Space,
-  Table,
-  Tag,
-  Button,
-  ConfigProvider,
-  Input,
-  Select,
-  Spin,
-  Avatar,
-  Badge,
-} from "antd";
+import { Space, Table, Button, ConfigProvider, Input, Spin } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
 import NewCustomerModal from "./NewCustomerModal";
@@ -18,7 +7,6 @@ import EditCustomerModal from "./EditCustomerModal";
 import DeleteCustomerModal from "./DeleteCustomerModal";
 
 const { Search } = Input;
-const { Option } = Select;
 
 const Customers = () => {
   const [customers, setCustomers] = useState([]);
@@ -170,6 +158,7 @@ const Customers = () => {
       ),
     },
   ];
+
   return (
     <>
       {loading ? (
