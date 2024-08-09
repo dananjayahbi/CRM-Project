@@ -75,7 +75,7 @@ const items = [
     label: "Products",
     children: [
       { key: "61", label: "Products List", icon: <UnorderedListOutlined />, path: "/products/list" },
-      { key: "62", label: "Product Categories", icon: <UnorderedListOutlined />, path: "/products/categories" },
+      { key: "62", label: "Product Categories", icon: <UnorderedListOutlined />, path: "/products/products-category" },
       { key: "63", label: "Brands", icon: <OneToOneOutlined />, path: "/products/brands" },
       { key: "64", label: "Print Labels", icon: <BarcodeOutlined />, path: "/products/print-labels" },
     ],
@@ -118,9 +118,9 @@ const items = [
     children: [
       { key: "101", label: "Company Profile", icon: <FundProjectionScreenOutlined />, path: "/settings/company-profile" },
       { key: "102", label: "Site Settings", icon: <BranchesOutlined />, path: "/settings/site-settings" },
-      { key: "103", label: "Tax List", icon: <PercentageOutlined />, path: "/settings/tax-list" },
-      { key: "104", label: "Units List", icon: <MoneyCollectOutlined />, path: "/settings/units-list" },
-      { key: "105", label: "Payment Types List", icon: <CreditCardOutlined />, path: "/settings/payment-types-list" },
+      { key: "103", label: "Tax", icon: <PercentageOutlined />, path: "/settings/tax" },
+      { key: "104", label: "Units", icon: <MoneyCollectOutlined />, path: "/settings/units" },
+      { key: "105", label: "Payment Types", icon: <CreditCardOutlined />, path: "/settings/payment-types" },
       { key: "106", label: "Database Backup", icon: <DatabaseOutlined />, path: "/settings/database-backup" },
     ],
   },

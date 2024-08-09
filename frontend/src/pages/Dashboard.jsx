@@ -8,6 +8,10 @@ import DashboardContent from "../pages/DashboardContent";
 import Users from "../pages/Users/Users";
 import Customers from "./Customers/Customers";
 import Suppliers from "./Suppliers/Suppliers";
+import Units from "./Units/Units";
+import PaymentTypes from "./PaymentTypes/PaymentTypes";
+import Tax from "./Tax/Tax";
+import ProductsCategory from "./ProductsCategory/ProductsCategory";
 
 const theme = {
   token: {
@@ -147,6 +151,16 @@ const Dashboard = () => {
               <Route path="/users" element={<Users />} />
               <Route path="/customers" element={<Customers />} />
               <Route path="/suppliers" element={<Suppliers />} />
+              <Route path="/settings/units" element={<Units />} />
+              <Route
+                path="/settings/payment-types"
+                element={<PaymentTypes />}
+              />
+              <Route path="/settings/tax" element={<Tax />} />
+              <Route
+                path="/products/products-category"
+                element={<ProductsCategory />}
+              />
             </Routes>
           </Content>
           {/* The Footer */}

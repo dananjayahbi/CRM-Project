@@ -35,20 +35,6 @@ const Suppliers = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Fetch all customers from the server
-  const fetchCustomers = async () => {
-    try {
-      const { data } = await axios.get(
-        "http://localhost:3000/api/customers/getAllCustomers"
-      );
-      setCustomers(data);
-      setLoading(false);
-    } catch (error) {
-      console.error(error);
-      setLoading(false);
-    }
-  };
-
   // Fetch all suppliers from the server
   const fetchSuppliers = async () => {
     try {
@@ -228,7 +214,7 @@ const Suppliers = () => {
               margin: "-40px 0 0 0",
             }}
           >
-            Suppliers List
+            Suppliers List ({filteredSuppliers.length})
           </p>
           <div
             style={{
@@ -248,11 +234,6 @@ const Suppliers = () => {
                 style={{ width: 200 }}
               />
             </div>
-          </div>
-          <div>
-            <p style={{ margin: "-50px 0", textAlign: "left" }}>
-              Total Customers: {filteredSuppliers.length}
-            </p>
           </div>
           <ConfigProvider theme={theme}>
             <div style={{ maxWidth: "100%", overflowX: "auto" }}>

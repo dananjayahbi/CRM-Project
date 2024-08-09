@@ -73,8 +73,8 @@ exports.updateTax = async (req, res) => {
     }
 
     if (tax) {
-      taxName ? (tax.taxName = taxName) : tax.taxName;
-      taxRate ? (tax.taxRate = taxRate) : tax.taxRate;
+      tax.taxName = taxName || tax.taxName;
+      tax.taxRate = taxRate || tax.taxRate;
 
       const updatedTax = await tax.save();
       res.status(200).send({

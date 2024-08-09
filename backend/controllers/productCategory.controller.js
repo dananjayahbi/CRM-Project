@@ -73,10 +73,8 @@ exports.updateProductCategory = async (req, res) => {
     }
 
     if (productCategory) {
-      name ? (productCategory.name = name) : productCategory.name;
-      description
-        ? (productCategory.description = description)
-        : productCategory.description;
+      productCategory.name = name || productCategory.name;
+      productCategory.description = description !== undefined ? description : productCategory.description;
 
       const updatedProductCategory = await productCategory.save();
 

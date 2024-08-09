@@ -75,7 +75,7 @@ exports.updatePaymentType = async (req, res) => {
     }
 
     if (paymentType) {
-      name ? (paymentType.name = name) : paymentType.name;
+      paymentType.name = name || paymentType.name;
 
       const updatedPaymentType = await paymentType.save();
 

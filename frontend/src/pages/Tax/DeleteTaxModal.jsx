@@ -2,23 +2,18 @@ import React, { useState } from "react";
 import { Modal, Button, message } from "antd";
 import axios from "axios";
 
-const DeleteCustomerModal = ({
-  visible,
-  onCancel,
-  onDelete,
-  selectedCustomerId,
-}) => {
+const DeleteTaxModal = ({ visible, onCancel, onDelete, selectedTaxId }) => {
   const [loading, setLoading] = useState(false);
 
   const handleDelete = async () => {
     setLoading(true);
     try {
       await axios.delete(
-        `http://localhost:3000/api/customers/deleteCustomer/${selectedCustomerId}`
+        `http://localhost:3000/api/taxes/deleteTax/${selectedTaxId}`
       );
       onDelete();
       onCancel();
-      message.success("Customer deleted successfully.");
+      message.success("Tax deleted successfully.");
     } catch (error) {
       console.error(error);
       message.error("An error occurred. Please try again.");
@@ -29,7 +24,7 @@ const DeleteCustomerModal = ({
 
   return (
     <Modal
-      title="Delete Customer"
+      title="Delete Tax"
       visible={visible}
       onCancel={onCancel}
       footer={[
@@ -41,9 +36,9 @@ const DeleteCustomerModal = ({
         </Button>,
       ]}
     >
-      <p>Are you sure you want to delete this customer?</p>
+      <p>Are you sure you want to delete this tax?</p>
     </Modal>
   );
 };
 
-export default DeleteCustomerModal;
+export default DeleteTaxModal;
