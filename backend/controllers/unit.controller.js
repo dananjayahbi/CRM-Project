@@ -54,7 +54,7 @@ exports.getUnitById = async (req, res) => {
   }
 };
 
-// Update a Unit by the id in the request
+// Update Unit
 exports.updateUnit = async (req, res) => {
   try {
     const { id } = req.params;
@@ -76,8 +76,8 @@ exports.updateUnit = async (req, res) => {
       }
 
     if (unit) {
-      name ? (unit.name = name) : unit.name;
-      description ? (unit.description = description) : unit.description;
+      unit.name = name || unit.name;
+      unit.description = description !== undefined ? description : unit.description;
 
       const updatedUnit = await unit.save();
 

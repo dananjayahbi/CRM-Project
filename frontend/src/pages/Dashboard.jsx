@@ -8,6 +8,7 @@ import DashboardContent from "../pages/DashboardContent";
 import Users from "../pages/Users/Users";
 import Customers from "./Customers/Customers";
 import Suppliers from "./Suppliers/Suppliers";
+import Units from "./Units/Units";
 
 const theme = {
   token: {
@@ -147,6 +148,7 @@ const Dashboard = () => {
               <Route path="/users" element={<Users />} />
               <Route path="/customers" element={<Customers />} />
               <Route path="/suppliers" element={<Suppliers />} />
+              <Route path="settings/units" element={<Units />} />
             </Routes>
           </Content>
           {/* The Footer */}

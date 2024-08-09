@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Modal, Button } from "antd";
+import { Modal, Button, message } from "antd";
 import axios from "axios";
 
 const DeleteUserModal = ({ visible, onCancel, onDelete, selectedUserId }) => {
@@ -13,8 +13,10 @@ const DeleteUserModal = ({ visible, onCancel, onDelete, selectedUserId }) => {
       );
       onDelete();
       onCancel();
+      message.success("User deleted successfully.");
     } catch (error) {
       console.error(error);
+      message.error("An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }

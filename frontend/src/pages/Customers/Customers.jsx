@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Space, Table, Button, ConfigProvider, Input, Spin } from "antd";
-import {
-  LoadingOutlined,
-} from "@ant-design/icons";
+import { LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
 import NewCustomerModal from "./NewCustomerModal";
 import EditCustomerModal from "./EditCustomerModal";
@@ -226,7 +224,7 @@ const Customers = () => {
               margin: "-40px 0 0 0",
             }}
           >
-            Customers List
+            Customers List ({filteredCustomers.length})
           </p>
           <div
             style={{
@@ -246,11 +244,6 @@ const Customers = () => {
                 style={{ width: 200 }}
               />
             </div>
-          </div>
-          <div>
-            <p style={{ margin: "-50px 0", textAlign: "left" }}>
-              Total Customers: {filteredCustomers.length}
-            </p>
           </div>
           <ConfigProvider theme={theme}>
             <div style={{ maxWidth: "100%", overflowX: "auto" }}>

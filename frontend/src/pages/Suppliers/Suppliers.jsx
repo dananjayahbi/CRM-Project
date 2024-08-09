@@ -214,7 +214,7 @@ const Suppliers = () => {
               margin: "-40px 0 0 0",
             }}
           >
-            Suppliers List
+            Suppliers List ({filteredSuppliers.length})
           </p>
           <div
             style={{
@@ -234,11 +234,6 @@ const Suppliers = () => {
                 style={{ width: 200 }}
               />
             </div>
-          </div>
-          <div>
-            <p style={{ margin: "-50px 0", textAlign: "left" }}>
-              Total Customers: {filteredSuppliers.length}
-            </p>
           </div>
           <ConfigProvider theme={theme}>
             <div style={{ maxWidth: "100%", overflowX: "auto" }}>

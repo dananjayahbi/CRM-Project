@@ -119,7 +119,7 @@ const items = [
       { key: "101", label: "Company Profile", icon: <FundProjectionScreenOutlined />, path: "/settings/company-profile" },
       { key: "102", label: "Site Settings", icon: <BranchesOutlined />, path: "/settings/site-settings" },
       { key: "103", label: "Tax List", icon: <PercentageOutlined />, path: "/settings/tax-list" },
-      { key: "104", label: "Units List", icon: <MoneyCollectOutlined />, path: "/settings/units-list" },
+      { key: "104", label: "Units", icon: <MoneyCollectOutlined />, path: "/settings/units" },
       { key: "105", label: "Payment Types List", icon: <CreditCardOutlined />, path: "/settings/payment-types-list" },
       { key: "106", label: "Database Backup", icon: <DatabaseOutlined />, path: "/settings/database-backup" },
     ],

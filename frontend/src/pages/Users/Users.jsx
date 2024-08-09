@@ -297,7 +297,7 @@ const Users = () => {
       ) : (
         <div style={{ margin: "-40px 0 0 0" }}>
           <p style={{ textAlign: "left", fontSize: "30px", fontWeight: 500 }}>
-            Users List
+            Users List ({filteredAndSearchedUsers.length})
           </p>
           <div
             style={{
@@ -338,11 +338,6 @@ const Users = () => {
                 <Option value="false">Inactive</Option>
               </Select>
             </div>
-          </div>
-          <div>
-            <p style={{ margin: "-50px 0", textAlign: "left" }}>
-              Total Users: {filteredAndSearchedUsers.length}
-            </p>
           </div>
           <ConfigProvider theme={theme}>
             <div style={{ maxWidth: "100%", overflowX: "auto" }}>
