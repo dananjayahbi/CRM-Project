@@ -76,10 +76,8 @@ exports.updateExpenseCategory = async (req, res) => {
     }
 
     if (expenseCategory) {
-      name ? (expenseCategory.name = name) : expenseCategory.name;
-      description
-        ? (expenseCategory.description = description)
-        : expenseCategory.description;
+      expenseCategory.name = name || expenseCategory.name;
+      expenseCategory.description = description !== undefined ? description : expenseCategory.description;
 
       const updatedExpenseCategory = await expenseCategory.save();
 
