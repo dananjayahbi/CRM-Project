@@ -9,6 +9,7 @@ import Users from "../pages/Users/Users";
 import Customers from "./Customers/Customers";
 import Suppliers from "./Suppliers/Suppliers";
 import Units from "./Units/Units";
+import PaymentTypes from "./PaymentTypes/PaymentTypes";
 
 const theme = {
   token: {
@@ -148,7 +149,11 @@ const Dashboard = () => {
               <Route path="/users" element={<Users />} />
               <Route path="/customers" element={<Customers />} />
               <Route path="/suppliers" element={<Suppliers />} />
-              <Route path="settings/units" element={<Units />} />
+              <Route path="/settings/units" element={<Units />} />
+              <Route
+                path="/settings/payment-types"
+                element={<PaymentTypes />}
+              />
             </Routes>
           </Content>
           {/* The Footer */}
