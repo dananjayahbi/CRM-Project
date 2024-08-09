@@ -7,6 +7,7 @@ import SideMenu from "../components/SideMenu";
 import DashboardContent from "../pages/DashboardContent";
 import Users from "../pages/Users/Users";
 import Customers from "./Customers/Customers";
+import Suppliers from "./Suppliers/Suppliers";
 
 const theme = {
   token: {
@@ -25,7 +26,7 @@ const headerStyle = {
   backgroundColor: "#ebebeb",
   display: "flex",
   alignItems: "center",
-  justifyContent: "space-between",
+  justifyContent: window.innerWidth < 1000 ? "flex-end" : "space-between",
 };
 const contentStyle = {
   textAlign: "center",
@@ -47,7 +48,7 @@ const layoutStyle = {
 const footerStyle = {};
 
 const Dashboard = () => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const [width, setWidth] = useState(window.innerWidth);
 
   //Get the window inner width realtime
@@ -88,7 +89,7 @@ const Dashboard = () => {
         <ConfigProvider theme={theme}>
           {/* The side Menu */}
           <Sider
-            width={width < 1000 ? "250px" : "18%"}
+            width={width < 1655 ? 300 : width < 1024 ? 200 : 256}
             trigger={null}
             collapsible
             collapsed={collapsed}
@@ -112,6 +113,7 @@ const Dashboard = () => {
                 }
                 onClick={() => setCollapsed(!collapsed)}
                 style={{
+                  display: width < 1000 ? "none" : "block",
                   fontSize: "16px",
                   width: 64,
                   height: 64,
@@ -121,8 +123,6 @@ const Dashboard = () => {
                 <div
                   style={{
                     display: !collapsed && width < 1000 ? "none" : "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
                     cursor: "pointer",
                   }}
                 >
@@ -146,6 +146,7 @@ const Dashboard = () => {
               <Route path="/" element={<DashboardContent />} />
               <Route path="/users" element={<Users />} />
               <Route path="/customers" element={<Customers />} />
+              <Route path="/suppliers" element={<Suppliers />} />
             </Routes>
           </Content>
           {/* The Footer */}

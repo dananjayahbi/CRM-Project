@@ -1,25 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { Space, Table, Button, ConfigProvider, Input, Spin } from "antd";
-import {
-  LoadingOutlined,
-} from "@ant-design/icons";
+import { LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
-import NewCustomerModal from "./NewCustomerModal";
-import EditCustomerModal from "./EditCustomerModal";
-import DeleteCustomerModal from "./DeleteCustomerModal";
+import NewSupplierModal from "./NewSupplierModal";
+import EditSupplierModal from "./EditSupplierModal";
+import DeleteSupplierModal from "./DeleteSupplierModal";
 
 const { Search } = Input;
 
-const Customers = () => {
+const Suppliers = () => {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  const [customers, setCustomers] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
-  const [newCustomerModalVisible, setNewCustomerModalVisible] = useState(false);
-  const [editCustomerModalVisible, setEditCustomerModalVisible] =
+  const [newSupplierModalVisible, setNewSupplierModalVisible] = useState(false);
+  const [editSupplierModalVisible, setEditSupplierModalVisible] =
     useState(false);
-  const [selectedCustomerId, setSelectedCustomerId] = useState({});
-  const [deleteCustomerModalVisible, setDeleteCustomerModalVisible] =
+  const [selectedSupplierId, setSelectedSupplierId] = useState({});
+  const [deleteSupplierModalVisible, setDeleteSupplierModalVisible] =
     useState(false);
 
   const theme = {
@@ -51,60 +49,74 @@ const Customers = () => {
     }
   };
 
+  // Fetch all suppliers from the server
+  const fetchSuppliers = async () => {
+    try {
+      const { data } = await axios.get(
+        "http://localhost:3000/api/suppliers/getAllSuppliers"
+      );
+      setSuppliers(data);
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetchCustomers();
+    fetchSuppliers();
   }, []);
 
-  // Hnadle New Customer Button
-  const handleNewCustomer = () => {
-    setNewCustomerModalVisible(true);
+  // Hnadle New Supplier Button
+  const handleNewSupplier = () => {
+    setNewSupplierModalVisible(true);
   };
 
-  // Close New Customer Modal
-  const closeNewCustomerModal = () => {
-    setNewCustomerModalVisible(false);
+  // Close New Supplier Modal
+  const handleCancelNewSupplier = () => {
+    setNewSupplierModalVisible(false);
   };
 
-  // On Add New Customer
-  const handleNewCustomerAdd = () => {
-    setNewCustomerModalVisible(false);
-    fetchCustomers();
+  // On Add New Supplier
+  const handleAddSupplier = () => {
+    setNewSupplierModalVisible(false);
+    fetchSuppliers();
   };
 
-  // Handle Edit Customer Button
-  const handleEditCustomer = (record) => {
-    setSelectedCustomerId(record._id);
-    setEditCustomerModalVisible(true);
+  // Handle Edit Supplier Button
+  const handleEditSupplier = (record) => {
+    setSelectedSupplierId(record._id);
+    setEditSupplierModalVisible(true);
   };
 
-  // Close Edit Customer Modal
-  const closeEditCustomerModal = () => {
-    setEditCustomerModalVisible(false);
-    setSelectedCustomerId({});
+  // Close Edit Supplier Modal
+  const handleCancelEditSupplier = () => {
+    setEditSupplierModalVisible(false);
+    setSelectedSupplierId({});
   };
 
-  // On Edit Customer
-  const handleEditCustomerSave = () => {
-    setEditCustomerModalVisible(false);
-    setSelectedCustomerId({});
-    fetchCustomers();
+  // On Edit Supplier
+  const handleEditSupplierSave = () => {
+    setEditSupplierModalVisible(false);
+    setSelectedSupplierId({});
+    fetchSuppliers();
   };
 
-  // Handle Delete Customer Button
-  const handleDeleteCustomer = (record) => {
-    setSelectedCustomerId(record._id);
-    setDeleteCustomerModalVisible(true);
+  // Handle Delete Supplier Button
+  const handleDeleteSupplier = (record) => {
+    setSelectedSupplierId(record._id);
+    setDeleteSupplierModalVisible(true);
   };
 
-  // Close Delete Customer Modal
-  const closeDeleteCustomerModal = () => {
-    setDeleteCustomerModalVisible(false);
+  // Close Delete Supplier Modal
+  const handleCancelDeleteSupplier = () => {
+    setDeleteSupplierModalVisible(false);
   };
 
-  // On Delete Customer
-  const handleDeleteCustomerSave = () => {
-    setDeleteCustomerModalVisible(false);
-    fetchCustomers();
+  // On Delete Supplier
+  const handleDeleteSupplierSave = () => {
+    setDeleteSupplierModalVisible(false);
+    fetchSuppliers();
   };
 
   // Search Functionality
@@ -112,14 +124,13 @@ const Customers = () => {
     setSearchText(value.toLowerCase());
   };
 
-  // Filter the customers based on the search text
-  const filteredCustomers = customers.filter(
-    (customer) =>
-      customer.name.toLowerCase().includes(searchText) ||
-      customer.email.toLowerCase().includes(searchText) ||
-      customer.mobile.toLowerCase().includes(searchText) ||
-      customer.address.toLowerCase().includes(searchText) ||
-      customer.nic.toLowerCase().includes(searchText)
+  // Filter the suppliers based on the search text
+  const filteredSuppliers = suppliers.filter(
+    (supplier) =>
+      supplier.name.toLowerCase().includes(searchText) ||
+      supplier.email.toLowerCase().includes(searchText) ||
+      supplier.mobile.toLowerCase().includes(searchText) ||
+      supplier.address.toLowerCase().includes(searchText)
   );
 
   const columns = [
@@ -147,23 +158,17 @@ const Customers = () => {
       responsive: ["md"],
     },
     {
-      title: "NIC",
-      dataIndex: "nic",
-      key: "nic",
-      responsive: ["md"],
-    },
-    {
       title: "Action",
       key: "action",
       width: 200,
       render: (_, record) => (
         <Space size="middle">
-          <Button type="primary" onClick={() => handleEditCustomer(record)}>
+          <Button type="primary" onClick={() => handleEditSupplier(record)}>
             Edit
           </Button>
           <Button
             danger
-            onClick={() => handleDeleteCustomer(record)}
+            onClick={() => handleDeleteSupplier(record)}
             style={{ marginLeft: "-10px" }}
           >
             Delete
@@ -185,16 +190,13 @@ const Customers = () => {
       <p>
         <b>Address:</b> {record.address}
       </p>
-      <p>
-        <b>NIC:</b> {record.nic}
-      </p>
       <Space size="middle" style={{ marginTop: "10px" }}>
-        <Button type="primary" onClick={() => handleEditCustomer(record)}>
+        <Button type="primary" onClick={() => handleEditSupplier(record)}>
           Edit
         </Button>
         <Button
           danger
-          onClick={() => handleDeleteCustomer(record)}
+          onClick={() => handleDeleteSupplier(record)}
           style={{ marginLeft: "-10px" }}
         >
           Delete
@@ -226,7 +228,7 @@ const Customers = () => {
               margin: "-40px 0 0 0",
             }}
           >
-            Customers List
+            Suppliers List
           </p>
           <div
             style={{
@@ -235,8 +237,8 @@ const Customers = () => {
               marginBottom: "10px",
             }}
           >
-            <Button type="primary" onClick={handleNewCustomer}>
-              New Customer
+            <Button type="primary" onClick={handleNewSupplier}>
+              New Supplier
             </Button>
             <div style={{ display: "flex", gap: "10px" }}>
               <Search
@@ -249,14 +251,14 @@ const Customers = () => {
           </div>
           <div>
             <p style={{ margin: "-50px 0", textAlign: "left" }}>
-              Total Customers: {filteredCustomers.length}
+              Total Customers: {filteredSuppliers.length}
             </p>
           </div>
           <ConfigProvider theme={theme}>
             <div style={{ maxWidth: "100%", overflowX: "auto" }}>
               <Table
                 columns={columns}
-                dataSource={filteredCustomers}
+                dataSource={filteredSuppliers}
                 loading={loading}
                 expandable={{
                   expandedRowRender: expandedRowRender,
@@ -267,22 +269,22 @@ const Customers = () => {
               />
             </div>
           </ConfigProvider>
-          <NewCustomerModal
-            visible={newCustomerModalVisible}
-            onCancel={closeNewCustomerModal}
-            onAdd={handleNewCustomerAdd}
+          <NewSupplierModal
+            visible={newSupplierModalVisible}
+            onCancel={handleCancelNewSupplier}
+            onAdd={handleAddSupplier}
           />
-          <EditCustomerModal
-            visible={editCustomerModalVisible}
-            onCancel={closeEditCustomerModal}
-            onEdit={handleEditCustomerSave}
-            selectedCustomerId={selectedCustomerId}
+          <EditSupplierModal
+            visible={editSupplierModalVisible}
+            onCancel={handleCancelEditSupplier}
+            onEdit={handleEditSupplierSave}
+            selectedSupplierId={selectedSupplierId}
           />
-          <DeleteCustomerModal
-            visible={deleteCustomerModalVisible}
-            onCancel={closeDeleteCustomerModal}
-            onDelete={handleDeleteCustomerSave}
-            selectedCustomerId={selectedCustomerId}
+          <DeleteSupplierModal
+            visible={deleteSupplierModalVisible}
+            onCancel={handleCancelDeleteSupplier}
+            onDelete={handleDeleteSupplierSave}
+            selectedSupplierId={selectedSupplierId}
           />
         </div>
       )}
@@ -290,4 +292,4 @@ const Customers = () => {
   );
 };
 
-export default Customers;
+export default Suppliers;
