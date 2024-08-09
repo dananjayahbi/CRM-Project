@@ -11,6 +11,7 @@ import Suppliers from "./Suppliers/Suppliers";
 import Units from "./Units/Units";
 import PaymentTypes from "./PaymentTypes/PaymentTypes";
 import Tax from "./Tax/Tax";
+import ProductsCategory from "./ProductsCategory/ProductsCategory";
 
 const theme = {
   token: {
@@ -156,6 +157,10 @@ const Dashboard = () => {
                 element={<PaymentTypes />}
               />
               <Route path="/settings/tax" element={<Tax />} />
+              <Route
+                path="/products/products-category"
+                element={<ProductsCategory />}
+              />
             </Routes>
           </Content>
           {/* The Footer */}

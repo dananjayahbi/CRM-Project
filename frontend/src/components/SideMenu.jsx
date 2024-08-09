@@ -75,7 +75,7 @@ const items = [
     label: "Products",
     children: [
       { key: "61", label: "Products List", icon: <UnorderedListOutlined />, path: "/products/list" },
-      { key: "62", label: "Product Categories", icon: <UnorderedListOutlined />, path: "/products/categories" },
+      { key: "62", label: "Product Categories", icon: <UnorderedListOutlined />, path: "/products/products-category" },
       { key: "63", label: "Brands", icon: <OneToOneOutlined />, path: "/products/brands" },
       { key: "64", label: "Print Labels", icon: <BarcodeOutlined />, path: "/products/print-labels" },
     ],
