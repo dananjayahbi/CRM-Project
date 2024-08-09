@@ -9,6 +9,7 @@ import DeleteSupplierModal from "./DeleteSupplierModal";
 const { Search } = Input;
 
 const Suppliers = () => {
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
@@ -25,6 +26,27 @@ const Suppliers = () => {
         headerBg: "#ededed",
       },
     },
+  };
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Fetch all customers from the server
+  const fetchCustomers = async () => {
+    try {
+      const { data } = await axios.get(
+        "http://localhost:3000/api/customers/getAllCustomers"
+      );
+      setCustomers(data);
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+    }
   };
 
   // Fetch all suppliers from the server
@@ -121,16 +143,19 @@ const Suppliers = () => {
       title: "Email",
       dataIndex: "email",
       key: "email",
+      responsive: ["md"],
     },
     {
       title: "Mobile",
       dataIndex: "mobile",
       key: "mobile",
+      responsive: ["md"],
     },
     {
       title: "Address",
       dataIndex: "address",
       key: "address",
+      responsive: ["md"],
     },
     {
       title: "Action",
@@ -150,8 +175,35 @@ const Suppliers = () => {
           </Button>
         </Space>
       ),
+      responsive: ["lg"],
     },
   ];
+
+  const expandedRowRender = (record) => (
+    <div>
+      <p>
+        <b>Email:</b> {record.email}
+      </p>
+      <p>
+        <b>Mobile:</b> {record.mobile}
+      </p>
+      <p>
+        <b>Address:</b> {record.address}
+      </p>
+      <Space size="middle" style={{ marginTop: "10px" }}>
+        <Button type="primary" onClick={() => handleEditSupplier(record)}>
+          Edit
+        </Button>
+        <Button
+          danger
+          onClick={() => handleDeleteSupplier(record)}
+          style={{ marginLeft: "-10px" }}
+        >
+          Delete
+        </Button>
+      </Space>
+    </div>
+  );
 
   return (
     <>
@@ -176,7 +228,7 @@ const Suppliers = () => {
               margin: "-40px 0 0 0",
             }}
           >
-            Customers List
+            Suppliers List
           </p>
           <div
             style={{
@@ -186,7 +238,7 @@ const Suppliers = () => {
             }}
           >
             <Button type="primary" onClick={handleNewSupplier}>
-              New Customer
+              New Supplier
             </Button>
             <div style={{ display: "flex", gap: "10px" }}>
               <Search
@@ -203,12 +255,19 @@ const Suppliers = () => {
             </p>
           </div>
           <ConfigProvider theme={theme}>
-            <Table
-              columns={columns}
-              dataSource={filteredSuppliers}
-              loading={loading}
-              rowKey={(record) => record._id}
-            />
+            <div style={{ maxWidth: "100%", overflowX: "auto" }}>
+              <Table
+                columns={columns}
+                dataSource={filteredSuppliers}
+                loading={loading}
+                expandable={{
+                  expandedRowRender: expandedRowRender,
+                  rowExpandable: (record) =>
+                    windowWidth < 1000 && record.name !== "Not Expandable",
+                }}
+                rowKey="_id"
+              />
+            </div>
           </ConfigProvider>
           <NewSupplierModal
             visible={newSupplierModalVisible}
