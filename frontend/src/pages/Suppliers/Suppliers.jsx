@@ -35,20 +35,6 @@ const Suppliers = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Fetch all customers from the server
-  const fetchCustomers = async () => {
-    try {
-      const { data } = await axios.get(
-        "http://localhost:3000/api/customers/getAllCustomers"
-      );
-      setCustomers(data);
-      setLoading(false);
-    } catch (error) {
-      console.error(error);
-      setLoading(false);
-    }
-  };
-
   // Fetch all suppliers from the server
   const fetchSuppliers = async () => {
     try {

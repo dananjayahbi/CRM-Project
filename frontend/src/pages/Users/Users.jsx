@@ -21,6 +21,7 @@ const { Search } = Input;
 const { Option } = Select;
 
 const Users = () => {
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
@@ -38,6 +39,13 @@ const Users = () => {
       },
     },
   };
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Fetch all users from the server
   const fetchUsers = async () => {
@@ -177,18 +185,21 @@ const Users = () => {
       dataIndex: "username",
       key: "username",
       width: 150,
+      responsive: ["md"],
     },
     {
       title: "Email",
       dataIndex: "email",
       key: "email",
       width: 250,
+      responsive: ["md"],
     },
     {
       title: "Mobile",
       dataIndex: "mobile",
       key: "mobile",
       width: 150,
+      responsive: ["md"],
     },
     {
       title: "Role",
@@ -205,6 +216,7 @@ const Users = () => {
           {role.toUpperCase()}
         </Tag>
       ),
+      responsive: ["md"],
     },
     {
       title: "Action",
@@ -224,8 +236,50 @@ const Users = () => {
           </Button>
         </Space>
       ),
+      responsive: ["lg"],
     },
   ];
+
+  const expandedRowRender = (record) => (
+    <div>
+      <p>
+        <b>Username:</b> {record.username}
+      </p>
+      <p>
+        <b>Email:</b> {record.email}
+      </p>
+      <p>
+        <b>Mobile:</b> {record.mobile}
+      </p>
+      <p>
+        <b>Role: </b>
+        <Tag
+          color={
+            record.role === "superAdmin"
+              ? "gold"
+              : record.role === "admin"
+              ? "green"
+              : "blue"
+          }
+          key={record.role}
+        >
+          {record.role.toUpperCase()}
+        </Tag>
+      </p>
+      <Space size="middle" style={{ marginTop: "10px" }}>
+        <Button type="primary" onClick={() => handleEditUser(record)}>
+          Edit
+        </Button>
+        <Button
+          danger
+          onClick={() => handleDeleteUser(record)}
+          style={{ marginLeft: "-10px" }}
+        >
+          Delete
+        </Button>
+      </Space>
+    </div>
+  );
 
   return (
     <>
@@ -291,12 +345,19 @@ const Users = () => {
             </p>
           </div>
           <ConfigProvider theme={theme}>
-            <Table
-              columns={columns}
-              dataSource={filteredAndSearchedUsers}
-              loading={loading}
-              rowKey="_id"
-            />
+            <div style={{ maxWidth: "100%", overflowX: "auto" }}>
+              <Table
+                columns={columns}
+                dataSource={filteredAndSearchedUsers}
+                loading={loading}
+                expandable={{
+                  expandedRowRender: expandedRowRender,
+                  rowExpandable: (record) =>
+                    windowWidth < 1000 && record.name !== "Not Expandable",
+                }}
+                rowKey="_id"
+              />
+            </div>
           </ConfigProvider>
           <NewUserModal
             visible={newUserModalVisible}
