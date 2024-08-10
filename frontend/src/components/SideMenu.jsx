@@ -86,7 +86,7 @@ const items = [
     label: "Expenses",
     children: [
       { key: "71", label: "Expenses List", icon: <UnorderedListOutlined />, path: "/expenses/list" },
-      { key: "72", label: "Expense Categories", icon: <UnorderedListOutlined />, path: "/expenses/categories" },
+      { key: "72", label: "Expense Categories", icon: <UnorderedListOutlined />, path: "/expenses/expense-categories" },
     ],
   },
   {
