@@ -61,13 +61,11 @@ exports.updateExpense = async (req, res) => {
     }
 
     if (expense) {
-      expenseDate ? (expense.expenseDate = expenseDate) : expense.expenseDate;
-      expenseCategory
-        ? (expense.expenseCategory = expenseCategory)
-        : expense.expenseCategory;
-      expenseFor ? (expense.expenseFor = expenseFor) : expense.expenseFor;
-      amount ? (expense.amount = amount) : expense.amount;
-      note ? (expense.note = note) : expense.note;
+      expense.expenseDate = expenseDate || expense.expenseDate;
+      expense.expenseCategory = expenseCategory || expense.expenseCategory;
+      expense.expenseFor = expenseFor || expense.expenseFor;
+      expense.amount = amount || expense.amount;
+      expense.note = note !== undefined ? note : expense.note;
 
       const updatedExpense = await expense.save();
 
