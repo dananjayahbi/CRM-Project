@@ -233,7 +233,7 @@ const SideMenu = () => {
             alignItems: "center",
           }}
         >
-          <h1 style={{color: "#fff"}}>The LOGO</h1>
+          <h1 style={{color: "#fff"}}></h1>
         </div>
       </div>
       <Menu
