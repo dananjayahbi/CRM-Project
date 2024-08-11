@@ -15,6 +15,7 @@ import ProductsCategory from "./ProductsCategory/ProductsCategory";
 import ExpenseCategories from "./ExpenseCategories/ExpenseCategories";
 import Brands from "./Brands/Brands";
 import Expenses from "./Expenses/Expenses";
+import Products from "./Products/Products";
 
 const theme = {
   token: {
@@ -170,6 +171,7 @@ const Dashboard = () => {
               />
               <Route path="/products/brands" element={<Brands />} />
               <Route path="/expenses/list" element={<Expenses />} />
+              <Route path="/products/list" element={<Products />} />
             </Routes>
           </Content>
           {/* The Footer */}
