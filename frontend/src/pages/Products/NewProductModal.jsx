@@ -73,7 +73,7 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
   };
 
   return (
-    <Modal
+    <Modal 
       title="Add New Product"
       width="1000px"
       visible={visible}
