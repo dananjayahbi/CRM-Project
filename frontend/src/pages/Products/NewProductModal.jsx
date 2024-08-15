@@ -11,6 +11,7 @@ import {
   Row,
   Col,
   Divider,
+  Upload,
 } from "antd";
 
 const NewProductModal = ({ visible, onCancel, onAdd }) => {
@@ -29,6 +30,7 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
   const [discountType, setDiscountType] = useState("percentage");
   const [discount, setDiscount] = useState(0);
   const [finalPrice, setFinalPrice] = useState(0);
+  const [fileList, setFileList] = useState([]);
 
   // Handle Modal cancel and reset form fields
   const handleCancel = () => {
@@ -42,6 +44,7 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
     setDiscountType("percentage");
     setDiscount(0);
     setFinalPrice(0);
+    setFileList([]);
     onCancel();
   };
 
@@ -106,10 +109,25 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
   const handleAdd = async (values) => {
     setLoading(true);
     try {
+      const formData = new FormData();
+      Object.keys(values).forEach((key) => {
+        formData.append(key, values[key]);
+      });
+
+      if (fileList.length > 0) {
+        formData.append("image", fileList[0].originFileObj);
+      }
+
       await axios.post(
         "http://localhost:3000/api/products/createProduct",
-        values
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
+
       onAdd();
       form.resetFields();
       onCancel();
@@ -121,6 +139,8 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
       setLoading(false);
     }
   };
+
+  const handleFileChange = ({ fileList }) => setFileList(fileList);
 
   // Handle Tax Change
   const handleTaxChange = (value) => {
@@ -366,7 +386,22 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
               <Input.TextArea placeholder="Description" />
             </Form.Item>
           </Col>
-          <Col span={12}>{/* The product Image space */}</Col>
+          <Col span={12}>
+            <Form.Item
+              name="image"
+              label="Product Image"
+              rules={[
+                {
+                  required: false,
+                  message: "Please select the product image.",
+                },
+              ]}
+            >
+              <Upload listType="picture" fileList={fileList} beforeUpload={() => false} onChange={handleFileChange}>
+                <Button>Upload Product Image</Button>
+              </Upload>
+            </Form.Item>
+          </Col>
         </Row>
 
         <Divider />

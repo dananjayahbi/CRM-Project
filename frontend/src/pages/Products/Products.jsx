@@ -7,6 +7,7 @@ import {
   Input,
   Spin,
   DatePicker,
+  Avatar,
 } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
@@ -131,10 +132,10 @@ const Products = () => {
       key: "imageUrl",
       width: 70,
       render: (imageUrl) => (
-        <img
-          src={imageUrl}
-          alt="Product"
-          style={{ width: "50px", height: "50px", objectFit: "cover" }}
+        <Avatar
+          shape="square"
+          size={64}
+          src={"http://localhost:3000" + imageUrl}
         />
       ),
     },
