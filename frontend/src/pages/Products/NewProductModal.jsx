@@ -26,6 +26,8 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
   const [taxType, setTaxType] = useState("inclusive");
   const [profitMargin, setProfitMargin] = useState(0);
   const [salesPrice, setSalesPrice] = useState(0);
+  const [discountType, setDiscountType] = useState("percentage");
+  const [discount, setDiscount] = useState(0);
   const [finalPrice, setFinalPrice] = useState(0);
 
   // Handle Modal cancel and reset form fields
@@ -37,6 +39,9 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
     setProfitMargin(0);
     setSelectedTax(0);
     setTaxType("inclusive");
+    setDiscountType("percentage");
+    setDiscount(0);
+    setFinalPrice(0);
     onCancel();
   };
 
@@ -97,6 +102,7 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
     }
   }, [visible]);
 
+  // Handle Add Product
   const handleAdd = async (values) => {
     setLoading(true);
     try {
@@ -134,6 +140,16 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
   // Handle Sales Price Change
   const handleSalesPriceChange = (value) => {
     setSalesPrice(value);
+  };
+
+  // Handle Discount Type Change
+  const handleDiscountTypeChange = (value) => {
+    setDiscountType(value);
+  };
+
+  // Handle discount change
+  const handleDiscountChange = (value) => {
+    setDiscount(value);
   };
 
   // Calculate Purchase Price
@@ -186,15 +202,24 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
     }
   };
 
-  // // Log selectedTax whenever it changes
-  // useEffect(() => {
-  //   console.log(salesPrice);
-  // }, [salesPrice]);
+  // Calculate Final Price based on Discount
+  useEffect(() => {
+    if (discountType === "percentage") {
+      let calculatedFinalPrice = parseFloat(
+        salesPrice - (salesPrice * discount) / 100
+      ).toFixed(2);
+      form.setFieldsValue({ finalPrice: calculatedFinalPrice });
+    } else if (discountType === "fixed") {
+      let calculatedFinalPrice = parseFloat(salesPrice - discount).toFixed(2);
+      form.setFieldsValue({ finalPrice: calculatedFinalPrice });
+    }
+  }, [salesPrice, discountType, discount]);
 
   return (
     <Modal
       title="Add New Product"
       width="1200px"
+      centered
       visible={visible}
       onCancel={handleCancel}
       footer={[
@@ -229,7 +254,7 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
           </Col>
           <Col span={12}>
             <Form.Item
-              name="productCategory"
+              name="category"
               label="Product Category"
               rules={[
                 {
@@ -350,7 +375,7 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
           <Col span={12}>
             <Form.Item
               name="price"
-              label="Price"
+              label="Price (Rs.)"
               rules={[
                 {
                   required: true,
@@ -399,7 +424,7 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
           <Col span={12}>
             <Form.Item
               name="purchasePrice"
-              label="Purchase Price"
+              label="Purchase Price (Rs.)"
               rules={[
                 {
                   required: true,
@@ -447,7 +472,7 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
           <Col span={12}>
             <Form.Item
               name="salesPrice"
-              label="Sales Price"
+              label="Sales Price (Rs.)"
               rules={[
                 {
                   required: false,
@@ -485,6 +510,97 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
               />
             </Form.Item>
           </Col>
+        </Row>
+
+        <Divider />
+
+        <Row gutter={24}>
+          <Col span={12}>
+            <Form.Item
+              name="discountType"
+              label="Discount Type"
+              rules={[
+                {
+                  required: false,
+                  message: "Please select the discount type.",
+                },
+              ]}
+            >
+              <Select
+                placeholder="Select Discount Type"
+                onChange={handleDiscountTypeChange}
+              >
+                <Select.Option key="percentage" value="percentage">
+                  Percentage
+                </Select.Option>
+                <Select.Option key="fixed" value="fixed">
+                  Fixed
+                </Select.Option>
+              </Select>
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              name="discount"
+              label="Discount"
+              rules={[
+                {
+                  required: false,
+                },
+              ]}
+            >
+              <InputNumber
+                style={{ width: "100%" }}
+                placeholder="Discount"
+                disabled={salesPrice === 0}
+                onChange={handleDiscountChange}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row gutter={24}>
+          <Col span={12}>
+            <Form.Item
+              name="finalPrice"
+              label="Final Price (Rs.)"
+              rules={[
+                {
+                  required: false,
+                },
+              ]}
+            >
+              <InputNumber
+                style={{ width: "100%" }}
+                placeholder="Final Price"
+                value={finalPrice}
+                disabled
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>{/* Space */}</Col>
+        </Row>
+
+        <Divider />
+
+        <Row gutter={24}>
+          <Col span={12}>
+            <Form.Item
+              name="currentOpeningStock"
+              label="Current Opening Stock"
+              rules={[
+                {
+                  required: false,
+                },
+              ]}
+            >
+              <InputNumber
+                style={{ width: "100%" }}
+                placeholder="Opening Stock"
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>{/* Space */}</Col>
         </Row>
       </Form>
     </Modal>

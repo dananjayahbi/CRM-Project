@@ -126,6 +126,19 @@ const Products = () => {
 
   const columns = [
     {
+      title: "Product Image",
+      dataIndex: "imageUrl",
+      key: "imageUrl",
+      width: 70,
+      render: (imageUrl) => (
+        <img
+          src={imageUrl}
+          alt="Product"
+          style={{ width: "50px", height: "50px", objectFit: "cover" }}
+        />
+      ),
+    },
+    {
       title: "Product Code",
       dataIndex: "productCode",
       key: "productCode",
