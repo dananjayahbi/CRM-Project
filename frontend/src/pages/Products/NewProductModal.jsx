@@ -23,6 +23,22 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
   const [selectedTax, setSelectedTax] = useState(0);
   const [productPrice, setProductPrice] = useState(0);
   const [purchasePrice, setPurchasePrice] = useState(0);
+  const [taxType, setTaxType] = useState("inclusive");
+  const [profitMargin, setProfitMargin] = useState(0);
+  const [salesPrice, setSalesPrice] = useState(0);
+  const [finalPrice, setFinalPrice] = useState(0);
+
+  // Handle Modal cancel and reset form fields
+  const handleCancel = () => {
+    form.resetFields();
+    setPurchasePrice(0);
+    setProductPrice(0);
+    setSalesPrice(0);
+    setProfitMargin(0);
+    setSelectedTax(0);
+    setTaxType("inclusive");
+    onCancel();
+  };
 
   // Fetch all product categories from the server
   const fetchProductCategories = async () => {
@@ -105,36 +121,82 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
     setSelectedTax(value);
   };
 
-  // Handle Product Price Change and calculate purchase price
+  // Handle Product Price Change
   const handleProductPriceChange = (value) => {
     setProductPrice(value);
-    if (selectedTax === 0) {
-      return value;
-    } else {
-      return value + value * (selectedTax / 100);
-    }
+  };
+
+  // Handle Tax Type Change
+  const handleTaxTypeChange = (value) => {
+    setTaxType(value);
+  };
+
+  // Handle Sales Price Change
+  const handleSalesPriceChange = (value) => {
+    setSalesPrice(value);
   };
 
   // Calculate Purchase Price
   useEffect(() => {
-    if (selectedTax === 0) {
+    if (taxType === "inclusive") {
       setPurchasePrice(productPrice);
-    } else {
-      setPurchasePrice(productPrice + productPrice * (selectedTax / 100));
+      form.setFieldsValue({ purchasePrice: productPrice });
+    } else if (taxType === "exclusive") {
+      let calculatedPurchasePrice =
+        productPrice + (productPrice * selectedTax) / 100;
+      setPurchasePrice(calculatedPurchasePrice);
+      form.setFieldsValue({ purchasePrice: calculatedPurchasePrice });
     }
-  }, [productPrice, selectedTax]);
+  }, [productPrice, selectedTax, taxType]);
 
-  // Log selectedTax whenever it changes
+  // Calculate Sales Price based on Profit Margin
+  useEffect(() => {
+    if (profitMargin === 0) {
+      setSalesPrice(purchasePrice);
+      form.setFieldsValue({ salesPrice: purchasePrice });
+    } else {
+      let calculatedSalesPrice = parseFloat(
+        (purchasePrice + purchasePrice * (profitMargin / 100)).toFixed(2)
+      );
+      setSalesPrice(calculatedSalesPrice);
+      form.setFieldsValue({ salesPrice: calculatedSalesPrice });
+    }
+  }, [purchasePrice]);
+
+  // Calculate Profit Margin based on Sales Price
+  useEffect(() => {
+    let calculatedProfitMargin = parseFloat(
+      ((salesPrice - purchasePrice) / purchasePrice) * 100
+    ).toFixed(2);
+    setProfitMargin(calculatedProfitMargin);
+    form.setFieldsValue({ profitMargin: calculatedProfitMargin });
+  }, [salesPrice]);
+
+  //calculate sales price based on profit margin
+  const calculatePrifitMargin = (value) => {
+    if (profitMargin === 0) {
+      setSalesPrice(purchasePrice);
+      form.setFieldsValue({ salesPrice: purchasePrice });
+    } else {
+      let calculatedSalesPrice = parseFloat(
+        (purchasePrice + purchasePrice * (value / 100)).toFixed(2)
+      );
+      setSalesPrice(calculatedSalesPrice);
+      form.setFieldsValue({ salesPrice: calculatedSalesPrice });
+    }
+  };
+
+  // // Log selectedTax whenever it changes
   // useEffect(() => {
-  //   console.log(purchasePrice);
-  // }, [purchasePrice]);
+  //   console.log(salesPrice);
+  // }, [salesPrice]);
 
   return (
     <Modal
       title="Add New Product"
       width="1200px"
       visible={visible}
-      onCancel={onCancel}
+      onCancel={handleCancel}
       footer={[
         <Button key="cancel" onClick={onCancel}>
           Cancel
@@ -298,6 +360,7 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
             >
               <InputNumber
                 style={{ width: "100%" }}
+                placeholder="Product Price"
                 onChange={handleProductPriceChange}
               />
             </Form.Item>
@@ -313,7 +376,12 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
                 },
               ]}
             >
-              <Select placeholder="Select Tax" onChange={handleTaxChange}>
+              <Select
+                placeholder="Select Tax"
+                onChange={handleTaxChange}
+                // Disable if the product price is 0 or null
+                disabled={productPrice === 0}
+              >
                 <Select.Option key="none" value="0">
                   None(0.00%)
                 </Select.Option>
@@ -342,22 +410,79 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
                 style={{ width: "100%" }}
                 value={purchasePrice}
                 placeholder={purchasePrice}
-                disabled
+                disabled={true}
               />
             </Form.Item>
           </Col>
           <Col span={12}>
             <Form.Item
-              name="barcode"
-              label="Barcode"
+              name="taxType"
+              label="Tax Type"
               rules={[
                 {
                   required: false,
-                  message: "Please input the barcode.",
+                  message: "Please select the tax type.",
                 },
               ]}
             >
-              <Input placeholder="Barcode" />
+              <Select
+                placeholder="Select Tax Type"
+                onChange={handleTaxTypeChange}
+                defaultValue="inclusive"
+                // Disable if the tax is 0 or null
+                disabled={selectedTax === 0}
+              >
+                <Select.Option key="inclusive" value="inclusive">
+                  Inclusive
+                </Select.Option>
+                <Select.Option key="exclusive" value="exclusive">
+                  Exclusive
+                </Select.Option>
+              </Select>
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row gutter={24}>
+          <Col span={12}>
+            <Form.Item
+              name="salesPrice"
+              label="Sales Price"
+              rules={[
+                {
+                  required: false,
+                },
+              ]}
+            >
+              <InputNumber
+                style={{ width: "100%" }}
+                value={salesPrice}
+                placeholder={salesPrice}
+                defaultValue={salesPrice}
+                // Disable if the purchase price and price are 0 or null
+                disabled={purchasePrice === 0 && productPrice === 0}
+                onChange={handleSalesPriceChange}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              name="profitMargin"
+              label="Profit Margin (%)"
+              rules={[
+                {
+                  required: false,
+                },
+              ]}
+            >
+              <InputNumber
+                style={{ width: "100%" }}
+                value={profitMargin}
+                placeholder="Profit in %"
+                disabled={purchasePrice === 0}
+                defaultValue={0}
+                onChange={calculatePrifitMargin}
+              />
             </Form.Item>
           </Col>
         </Row>
