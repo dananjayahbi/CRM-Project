@@ -308,12 +308,12 @@ const Products = () => {
             onEdit={handleEditProductSave}
             selectedProductId={selectedProductId}
           />
-          {/* <DeleteExpenseModal
-          visible={deleteExpenseModalVisible}
-          onCancel={handleCancelDeleteExpense}
-          onDelete={handleDeleteExpenseSave}
-          selectedExpenseId={selectedExpenseId}
-        /> */}
+          <DeleteProductModal
+            visible={deleteProductModalVisible}
+            onCancel={handleCancelDeleteProduct}
+            onDelete={handleDeleteProductSave}
+            selectedProductId={selectedProductId}
+          />
         </div>
       )}
     </>
