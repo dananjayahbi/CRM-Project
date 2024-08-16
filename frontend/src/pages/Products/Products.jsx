@@ -187,12 +187,12 @@ const Products = () => {
       width: 200,
       render: (_, record) => (
         <Space size="middle">
-          <Button type="primary" onClick={() => handleEditExpense(record)}>
+          <Button type="primary" onClick={() => handleEditProduct(record)}>
             Edit
           </Button>
           <Button
             danger
-            onClick={() => handleDeleteExpense(record)}
+            onClick={() => handleDeleteProduct(record)}
             style={{ marginLeft: "-10px" }}
           >
             Delete
@@ -302,13 +302,13 @@ const Products = () => {
             onCancel={handleCancelNewProduct}
             onAdd={handleAddNewProduct}
           />
-          {/* <EditExpenseModal
-          visible={editExpenseModalVisible}
-          onCancel={handleCancelEditExpense}
-          onEdit={handleEditExpenseSave}
-          selectedExpenseId={selectedExpenseId}
-        />
-        <DeleteExpenseModal
+          <EditProductModal
+            visible={editProductModalVisible}
+            onCancel={handleCancelEditProduct}
+            onEdit={handleEditProductSave}
+            selectedProductId={selectedProductId}
+          />
+          {/* <DeleteExpenseModal
           visible={deleteExpenseModalVisible}
           onCancel={handleCancelDeleteExpense}
           onDelete={handleDeleteExpenseSave}

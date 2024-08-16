@@ -243,7 +243,7 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
       visible={visible}
       onCancel={handleCancel}
       footer={[
-        <Button key="cancel" onClick={onCancel}>
+        <Button key="cancel" onClick={handleCancel}>
           Cancel
         </Button>,
         <Button
@@ -397,7 +397,12 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
                 },
               ]}
             >
-              <Upload listType="picture" fileList={fileList} beforeUpload={() => false} onChange={handleFileChange}>
+              <Upload
+                listType="picture"
+                fileList={fileList}
+                beforeUpload={() => false}
+                onChange={handleFileChange}
+              >
                 <Button>Upload Product Image</Button>
               </Upload>
             </Form.Item>

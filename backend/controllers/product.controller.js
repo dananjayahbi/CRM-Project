@@ -184,31 +184,32 @@ exports.updateProductById = [
       }
 
       // Update other fields
-      name ? (product.name = name) : product.name;
-      brand ? (product.brand = brand) : product.brand;
-      category ? (product.category = category) : product.category;
-      unit ? (product.unit = unit) : product.unit;
-      minimumQty ? (product.minimumQty = minimumQty) : product.minimumQty;
-      barcode ? (product.barcode = barcode) : product.barcode;
-      description ? (product.description = description) : product.description;
-      price ? (product.price = price) : product.price;
-      tax ? (product.tax = tax) : product.tax;
-      purchasePrice
-        ? (product.purchasePrice = purchasePrice)
-        : product.purchasePrice;
-      taxType ? (product.taxType = taxType) : product.taxType;
-      profitMargin
-        ? (product.profitMargin = profitMargin)
-        : product.profitMargin;
-      salesPrice ? (product.salesPrice = salesPrice) : product.salesPrice;
-      finalPrice ? (product.finalPrice = finalPrice) : product.finalPrice;
-      discountType
-        ? (product.discountType = discountType)
-        : product.discountType;
-      discount ? (product.discount = discount) : product.discount;
-      currentOpeningStock
-        ? (product.currentOpeningStock = currentOpeningStock)
-        : product.currentOpeningStock;
+      product.name = name || product.name;
+      product.brand = brand || product.brand;
+      product.category = category || product.category;
+      product.unit = unit || product.unit;
+      product.minimumQty =
+        minimumQty !== undefined ? minimumQty : product.minimumQty;
+      product.barcode = barcode !== undefined ? barcode : product.barcode;
+      product.description =
+        description !== undefined ? description : product.description;
+      product.price = price || product.price;
+      product.tax = tax || product.tax;
+      product.purchasePrice = purchasePrice || product.purchasePrice;
+      product.taxType =
+        taxType !== undefined ? taxType : product.taxType || "inclusive";
+      product.profitMargin = profitMargin !== undefined ? profitMargin : 0;
+      product.salesPrice =
+        salesPrice !== undefined ? salesPrice : product.price;
+      product.discountType =
+        discountType !== undefined
+          ? discountType
+          : product.discountType || "fixed";
+      product.discount = discount !== undefined ? discount : 0;
+      product.currentOpeningStock =
+        currentOpeningStock !== undefined
+          ? currentOpeningStock
+          : product.minimumQty;
 
       await product.save();
 
