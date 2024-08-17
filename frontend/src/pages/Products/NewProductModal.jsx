@@ -11,6 +11,7 @@ import {
   Row,
   Col,
   Divider,
+  Upload,
 } from "antd";
 
 const NewProductModal = ({ visible, onCancel, onAdd }) => {
@@ -26,7 +27,10 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
   const [taxType, setTaxType] = useState("inclusive");
   const [profitMargin, setProfitMargin] = useState(0);
   const [salesPrice, setSalesPrice] = useState(0);
+  const [discountType, setDiscountType] = useState("percentage");
+  const [discount, setDiscount] = useState(0);
   const [finalPrice, setFinalPrice] = useState(0);
+  const [fileList, setFileList] = useState([]);
 
   // Handle Modal cancel and reset form fields
   const handleCancel = () => {
@@ -37,6 +41,10 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
     setProfitMargin(0);
     setSelectedTax(0);
     setTaxType("inclusive");
+    setDiscountType("percentage");
+    setDiscount(0);
+    setFinalPrice(0);
+    setFileList([]);
     onCancel();
   };
 
@@ -97,13 +105,29 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
     }
   }, [visible]);
 
+  // Handle Add Product
   const handleAdd = async (values) => {
     setLoading(true);
     try {
+      const formData = new FormData();
+      Object.keys(values).forEach((key) => {
+        formData.append(key, values[key]);
+      });
+
+      if (fileList.length > 0) {
+        formData.append("image", fileList[0].originFileObj);
+      }
+
       await axios.post(
         "http://localhost:3000/api/products/createProduct",
-        values
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
+
       onAdd();
       form.resetFields();
       onCancel();
@@ -115,6 +139,8 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
       setLoading(false);
     }
   };
+
+  const handleFileChange = ({ fileList }) => setFileList(fileList);
 
   // Handle Tax Change
   const handleTaxChange = (value) => {
@@ -134,6 +160,16 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
   // Handle Sales Price Change
   const handleSalesPriceChange = (value) => {
     setSalesPrice(value);
+  };
+
+  // Handle Discount Type Change
+  const handleDiscountTypeChange = (value) => {
+    setDiscountType(value);
+  };
+
+  // Handle discount change
+  const handleDiscountChange = (value) => {
+    setDiscount(value);
   };
 
   // Calculate Purchase Price
@@ -186,19 +222,28 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
     }
   };
 
-  // // Log selectedTax whenever it changes
-  // useEffect(() => {
-  //   console.log(salesPrice);
-  // }, [salesPrice]);
+  // Calculate Final Price based on Discount
+  useEffect(() => {
+    if (discountType === "percentage") {
+      let calculatedFinalPrice = parseFloat(
+        salesPrice - (salesPrice * discount) / 100
+      ).toFixed(2);
+      form.setFieldsValue({ finalPrice: calculatedFinalPrice });
+    } else if (discountType === "fixed") {
+      let calculatedFinalPrice = parseFloat(salesPrice - discount).toFixed(2);
+      form.setFieldsValue({ finalPrice: calculatedFinalPrice });
+    }
+  }, [salesPrice, discountType, discount]);
 
   return (
     <Modal
       title="Add New Product"
       width="1200px"
+      centered
       visible={visible}
       onCancel={handleCancel}
       footer={[
-        <Button key="cancel" onClick={onCancel}>
+        <Button key="cancel" onClick={handleCancel}>
           Cancel
         </Button>,
         <Button
@@ -229,7 +274,7 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
           </Col>
           <Col span={12}>
             <Form.Item
-              name="productCategory"
+              name="category"
               label="Product Category"
               rules={[
                 {
@@ -341,7 +386,27 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
               <Input.TextArea placeholder="Description" />
             </Form.Item>
           </Col>
-          <Col span={12}>{/* The product Image space */}</Col>
+          <Col span={12}>
+            <Form.Item
+              name="image"
+              label="Product Image"
+              rules={[
+                {
+                  required: false,
+                  message: "Please select the product image.",
+                },
+              ]}
+            >
+              <Upload
+                listType="picture"
+                fileList={fileList}
+                beforeUpload={() => false}
+                onChange={handleFileChange}
+              >
+                <Button>Upload Product Image</Button>
+              </Upload>
+            </Form.Item>
+          </Col>
         </Row>
 
         <Divider />
@@ -350,7 +415,7 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
           <Col span={12}>
             <Form.Item
               name="price"
-              label="Price"
+              label="Price (Rs.)"
               rules={[
                 {
                   required: true,
@@ -399,7 +464,7 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
           <Col span={12}>
             <Form.Item
               name="purchasePrice"
-              label="Purchase Price"
+              label="Purchase Price (Rs.)"
               rules={[
                 {
                   required: true,
@@ -447,7 +512,7 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
           <Col span={12}>
             <Form.Item
               name="salesPrice"
-              label="Sales Price"
+              label="Sales Price (Rs.)"
               rules={[
                 {
                   required: false,
@@ -485,6 +550,97 @@ const NewProductModal = ({ visible, onCancel, onAdd }) => {
               />
             </Form.Item>
           </Col>
+        </Row>
+
+        <Divider />
+
+        <Row gutter={24}>
+          <Col span={12}>
+            <Form.Item
+              name="discountType"
+              label="Discount Type"
+              rules={[
+                {
+                  required: false,
+                  message: "Please select the discount type.",
+                },
+              ]}
+            >
+              <Select
+                placeholder="Select Discount Type"
+                onChange={handleDiscountTypeChange}
+              >
+                <Select.Option key="percentage" value="percentage">
+                  Percentage
+                </Select.Option>
+                <Select.Option key="fixed" value="fixed">
+                  Fixed
+                </Select.Option>
+              </Select>
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              name="discount"
+              label="Discount"
+              rules={[
+                {
+                  required: false,
+                },
+              ]}
+            >
+              <InputNumber
+                style={{ width: "100%" }}
+                placeholder="Discount"
+                disabled={salesPrice === 0}
+                onChange={handleDiscountChange}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row gutter={24}>
+          <Col span={12}>
+            <Form.Item
+              name="finalPrice"
+              label="Final Price (Rs.)"
+              rules={[
+                {
+                  required: false,
+                },
+              ]}
+            >
+              <InputNumber
+                style={{ width: "100%" }}
+                placeholder="Final Price"
+                value={finalPrice}
+                disabled
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>{/* Space */}</Col>
+        </Row>
+
+        <Divider />
+
+        <Row gutter={24}>
+          <Col span={12}>
+            <Form.Item
+              name="currentOpeningStock"
+              label="Current Opening Stock"
+              rules={[
+                {
+                  required: false,
+                },
+              ]}
+            >
+              <InputNumber
+                style={{ width: "100%" }}
+                placeholder="Opening Stock"
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>{/* Space */}</Col>
         </Row>
       </Form>
     </Modal>

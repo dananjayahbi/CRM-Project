@@ -16,6 +16,7 @@ app.use(express.json());
 
 // Serve static files from the 'assets' directory
 app.use('/assets/users', express.static(path.join(__dirname, './assets/users')));
+app.use('/assets/products', express.static(path.join(__dirname, './assets/products')));
 
 //Setting up routing
 app.get("/", (req, res) => {

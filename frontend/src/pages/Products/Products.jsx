@@ -7,6 +7,7 @@ import {
   Input,
   Spin,
   DatePicker,
+  Avatar,
 } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
@@ -126,6 +127,19 @@ const Products = () => {
 
   const columns = [
     {
+      title: "Product Image",
+      dataIndex: "imageUrl",
+      key: "imageUrl",
+      width: 70,
+      render: (imageUrl) => (
+        <Avatar
+          shape="square"
+          size={64}
+          src={"http://localhost:3000" + imageUrl}
+        />
+      ),
+    },
+    {
       title: "Product Code",
       dataIndex: "productCode",
       key: "productCode",
@@ -173,12 +187,12 @@ const Products = () => {
       width: 200,
       render: (_, record) => (
         <Space size="middle">
-          <Button type="primary" onClick={() => handleEditExpense(record)}>
+          <Button type="primary" onClick={() => handleEditProduct(record)}>
             Edit
           </Button>
           <Button
             danger
-            onClick={() => handleDeleteExpense(record)}
+            onClick={() => handleDeleteProduct(record)}
             style={{ marginLeft: "-10px" }}
           >
             Delete
@@ -288,18 +302,18 @@ const Products = () => {
             onCancel={handleCancelNewProduct}
             onAdd={handleAddNewProduct}
           />
-          {/* <EditExpenseModal
-          visible={editExpenseModalVisible}
-          onCancel={handleCancelEditExpense}
-          onEdit={handleEditExpenseSave}
-          selectedExpenseId={selectedExpenseId}
-        />
-        <DeleteExpenseModal
-          visible={deleteExpenseModalVisible}
-          onCancel={handleCancelDeleteExpense}
-          onDelete={handleDeleteExpenseSave}
-          selectedExpenseId={selectedExpenseId}
-        /> */}
+          <EditProductModal
+            visible={editProductModalVisible}
+            onCancel={handleCancelEditProduct}
+            onEdit={handleEditProductSave}
+            selectedProductId={selectedProductId}
+          />
+          <DeleteProductModal
+            visible={deleteProductModalVisible}
+            onCancel={handleCancelDeleteProduct}
+            onDelete={handleDeleteProductSave}
+            selectedProductId={selectedProductId}
+          />
         </div>
       )}
     </>
