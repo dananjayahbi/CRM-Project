@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Modal, Button, message } from "antd";
 import axios from "axios";
 
-const DeleteProductModal = ({
+const DeleteProductModal = ({ 
   visible,
   onCancel,
   onDelete,
