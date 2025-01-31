@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const User = require("../models/user.model");
+const User = require("../models/User.model");
 
 const protect = async (req, res, next) => {
   let token;
@@ -12,11 +12,15 @@ const protect = async (req, res, next) => {
 
       // Verify the token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      console.log("Decoded Token:", decoded);
+
+      console.log("User ID:", decoded.id)
 
       // Get user from the token using Sequelize
-      req.user = await User.findByPk(decoded.id, {
+      req.user = await User.findById(decoded.id, {
         attributes: { exclude: ["password"] },
       });
+      console.log("User:", req.user);
 
       if (!req.user) {
         return res.status(404).json({ status: "Error", data: "User not found" });

@@ -1,7 +1,4 @@
-const sequelize = require("../config/db.config");
-
-const Customer = require("../models/customer.model");
-sequelize.sync({ force: false });
+const Customer = require("../models/Customer.model");
 
 // Create a new customer
 exports.createCustomer = async (req, res) => {
@@ -9,11 +6,11 @@ exports.createCustomer = async (req, res) => {
     const { name, email, mobile, address, nic } = req.body;
 
     if (!name || !email || !mobile) {
-      return res.status(400).send("All fields are required");
+      return res.status(400).send("Some Fields are missing");
     }
 
     // Find if any customer already exists with the provided email
-    const customerByEmail = await Customer.findOne({ where: { email } });
+    const customerByEmail = await Customer.findOne({ email });
     if (customerByEmail) {
       return res
         .status(400)
@@ -21,14 +18,14 @@ exports.createCustomer = async (req, res) => {
     }
 
     // Find if any customer already exists with the provided mobile
-    const customerByMobile = await Customer.findOne({ where: { mobile } });
+    const customerByMobile = await Customer.findOne({ mobile });
     if (customerByMobile) {
       return res
         .status(400)
-        .send("Customer already exists with the provided mobile");
+        .send("Customer already exists with the provided mobile number");
     }
 
-    const createdCustomer = await Customer.create({
+    const customer = new Customer({
       name,
       email,
       mobile,
@@ -36,6 +33,7 @@ exports.createCustomer = async (req, res) => {
       nic: nic ? nic : null,
     });
 
+    const createdCustomer = await customer.save();
     res.status(201).send({
       message: "Customer created successfully",
       customer: createdCustomer,
@@ -48,7 +46,7 @@ exports.createCustomer = async (req, res) => {
 // Get all customers
 exports.getAllCustomers = async (req, res) => {
   try {
-    const customers = await Customer.findAll();
+    const customers = await Customer.find();
     res.status(200).send(customers);
   } catch (err) {
     console.error("Unable to connect to the database:", err);
@@ -58,14 +56,13 @@ exports.getAllCustomers = async (req, res) => {
 // Get a customer by id
 exports.getCustomerById = async (req, res) => {
   try {
-    const { id } = req.params;
-    const customer = await Customer.findByPk(id);
+    const customer = await Customer.findById(req.params.id);
     if (!customer) {
       return res.status(404).send("Customer not found");
     }
     res.status(200).send(customer);
   } catch (err) {
-    console.error("Unable to connect to the database:", err);
+    console.error("Something went wrong! :", err);
   }
 };
 
@@ -75,13 +72,13 @@ exports.updateCustomer = async (req, res) => {
     const { id } = req.params;
     const { name, email, mobile, address, nic } = req.body;
 
-    const customer = await Customer.findByPk(id);
+    const customer = await Customer.findById(id);
     if (!customer) {
       return res.status(404).send("Customer not found");
     }
 
     if (email && email !== customer.email) {
-      const customerByEmail = await Customer.findOne({ where: { email } });
+      const customerByEmail = await Customer.findOne({ email });
       if (customerByEmail) {
         return res
           .status(400)
@@ -90,31 +87,30 @@ exports.updateCustomer = async (req, res) => {
     }
 
     if (mobile && mobile !== customer.mobile) {
-      const customerByMobile = await Customer.findOne({ where: { mobile } });
+      const customerByMobile = await Customer.findOne({ mobile });
       if (customerByMobile) {
         return res
           .status(400)
-          .send("Customer already exists with the provided mobile");
+          .send("Customer already exists with the provided mobile number");
       }
     }
 
     if (customer) {
-      name ? (customer.name = name) : customer.name;
-      email ? (customer.email = email) : customer.email;
-      mobile ? (customer.mobile = mobile) : customer.mobile;
-      address ? (customer.address = address) : customer.address;
-      nic ? (customer.nic = nic) : customer.nic;
+      customer.name = name || customer.name;
+      customer.email = email || customer.email;
+      customer.mobile = mobile || customer.mobile;
+      customer.address = address !== undefined ? address : customer.address;
+      customer.nic = nic !== undefined ? nic : customer.nic;
 
-      await customer.save();
+      const updatedCustomer = await customer.save();
 
-      res.status(200).send({
+      return res.status(200).send({
         message: "Customer updated successfully",
-        customer,
+        customer: updatedCustomer,
       });
     }
   } catch (err) {
-    console.error("Unable to update the customer:", err);
-    res.status(500).send("Unable to update the customer");
+    res.status(500).send("Unable to update the customer", err);
   }
 };
 
@@ -122,11 +118,10 @@ exports.updateCustomer = async (req, res) => {
 exports.deleteCustomer = async (req, res) => {
   try {
     const { id } = req.params;
-    const customer = await Customer.findByPk(id);
+    const customer = await Customer.findByIdAndDelete(id);
     if (!customer) {
       return res.status(404).send("Customer not found");
     }
-    await customer.destroy();
     res.status(200).send("Customer deleted successfully");
   } catch (err) {
     console.error("Unable to connect to the database:", err);

@@ -1,19 +1,16 @@
-const sequelize = require("../config/db.config");
-
-const Supplier = require("../models/supplier.model");
-sequelize.sync({ force: false });
+const Supplier = require("../models/Supplier.model");
 
 // Create a new supplier
 exports.createSupplier = async (req, res) => {
   try {
-    const { name, email, mobile, address, nic } = req.body;
+    const { name, email, mobile, address } = req.body;
 
     if (!name || !email || !mobile) {
-      return res.status(400).send("All fields are required");
+      return res.status(400).send("Some Fields are missing");
     }
 
     // Find if any supplier already exists with the provided email
-    const supplierByEmail = await Supplier.findOne({ where: { email } });
+    const supplierByEmail = await Supplier.findOne({ email });
     if (supplierByEmail) {
       return res
         .status(400)
@@ -21,21 +18,21 @@ exports.createSupplier = async (req, res) => {
     }
 
     // Find if any supplier already exists with the provided mobile
-    const supplierByMobile = await Supplier.findOne({ where: { mobile } });
+    const supplierByMobile = await Supplier.findOne({ mobile });
     if (supplierByMobile) {
       return res
         .status(400)
-        .send("Supplier already exists with the provided mobile");
+        .send("Supplier already exists with the provided mobile number");
     }
 
-    const createdSupplier = await Supplier.create({
+    const supplier = new Supplier({
       name,
       email,
       mobile,
       address: address ? address : null,
-      nic: nic ? nic : null,
     });
 
+    const createdSupplier = await supplier.save();
     res.status(201).send({
       message: "Supplier created successfully",
       supplier: createdSupplier,
@@ -48,7 +45,7 @@ exports.createSupplier = async (req, res) => {
 // Get all suppliers
 exports.getAllSuppliers = async (req, res) => {
   try {
-    const suppliers = await Supplier.findAll();
+    const suppliers = await Supplier.find();
     res.status(200).send(suppliers);
   } catch (err) {
     console.error("Unable to connect to the database:", err);
@@ -58,10 +55,8 @@ exports.getAllSuppliers = async (req, res) => {
 // Get a supplier by id
 exports.getSupplierById = async (req, res) => {
   try {
-    const supplier = await Supplier.findOne({ where: { id: req.params.id } });
-    if (!supplier) {
-      return res.status(404).send("Supplier not found");
-    }
+    const { id } = req.params;
+    const supplier = await Supplier.findById(id);
     res.status(200).send(supplier);
   } catch (err) {
     console.error("Unable to connect to the database:", err);
@@ -72,16 +67,15 @@ exports.getSupplierById = async (req, res) => {
 exports.updateSupplier = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, email, mobile, address, nic } = req.body;
+    const { name, email, mobile, address } = req.body;
 
-    const supplier = await Supplier.findByPk(id);
+    const supplier = await Supplier.findById(id);
     if (!supplier) {
       return res.status(404).send("Supplier not found");
     }
 
-    // Find if any supplier already exists with the provided email
     if (email && email !== supplier.email) {
-      const supplierByEmail = await Supplier.findOne({ where: { email } });
+      const supplierByEmail = await Supplier.findOne({ email });
       if (supplierByEmail) {
         return res
           .status(400)
@@ -89,32 +83,30 @@ exports.updateSupplier = async (req, res) => {
       }
     }
 
-    // Find if any supplier already exists with the provided mobile
     if (mobile && mobile !== supplier.mobile) {
-      const supplierByMobile = await Supplier.findOne({ where: { mobile } });
+      const supplierByMobile = await Supplier.findOne({ mobile });
       if (supplierByMobile) {
         return res
           .status(400)
-          .send("Supplier already exists with the provided mobile");
+          .send("Supplier already exists with the provided mobile number");
       }
     }
 
     if (supplier) {
-      name ? (supplier.name = name) : supplier.name;
-      email ? (supplier.email = email) : supplier.email;
-      mobile ? (supplier.mobile = mobile) : supplier.mobile;
-      address ? (supplier.address = address) : supplier.address;
-      nic ? (supplier.nic = nic) : supplier.nic;
+      supplier.name = name || supplier.name;
+      supplier.email = email || supplier.email;
+      supplier.mobile = mobile || supplier.mobile;
+      supplier.address = address !== undefined ? address : supplier.address;
 
-      await supplier.save();
+      const updatedSupplier = await supplier.save();
 
       res.status(200).send({
         message: "Supplier updated successfully",
-        supplier: supplier,
+        supplier: updatedSupplier,
       });
     }
   } catch (err) {
-    console.error("Unable to update the supplier:", err);
+    console.error("Unable to connect to the database:", err);
   }
 };
 
@@ -122,13 +114,14 @@ exports.updateSupplier = async (req, res) => {
 exports.deleteSupplier = async (req, res) => {
   try {
     const { id } = req.params;
-    const supplier = await Supplier.findByPk(id);
+    const supplier = await Supplier.findByIdAndDelete(id);
     if (!supplier) {
       return res.status(404).send("Supplier not found");
     }
-    await supplier.destroy();
-    res.status(200).send("Supplier deleted successfully");
+    res.status(200).send({
+      message: "Supplier deleted successfully"
+    });
   } catch (err) {
-    console.error("Unable to delete the supplier:", err);
+    console.error("Unable to connect to the database:", err);
   }
 };

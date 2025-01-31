@@ -1,7 +1,4 @@
-const sequelize = require("../config/db.config");
-
-const ExpenseCategory = require("../models/expenseCategory.model");
-sequelize.sync({ force: false });
+const ExpenseCategory = require("../models/ExpenseCategory.model");
 
 // Create a new expense category
 exports.createExpenseCategory = async (req, res) => {
@@ -9,27 +6,39 @@ exports.createExpenseCategory = async (req, res) => {
     const { name, description } = req.body;
 
     if (!name) {
-      return res.status(400).send("Name is required");
+      return res.status(400).send("Expense category name is required");
     }
 
-    const createdExpenseCategory = await ExpenseCategory.create({
+    // Find if any expense category already exists with the provided name
+    const expenseCategoryByName = await ExpenseCategory.findOne({ name });
+    if (expenseCategoryByName) {
+      return res
+        .status(400)
+        .send("Expense category already exists with the provided name");
+    }
+
+    const expenseCategory = new ExpenseCategory({
       name,
-      description: description ? description : null,
+      description: description ? description : "",
     });
 
+    const createdExpenseCategory = await expenseCategory.save();
     res.status(201).send({
       message: "Expense category created successfully",
       expenseCategory: createdExpenseCategory,
     });
   } catch (err) {
     console.error("Unable to connect to the database:", err);
+    res.status(500).send({
+      message: "Some error occurred while creating the expense category.",
+    });
   }
 };
 
 // Get all expense categories
 exports.getAllExpenseCategories = async (req, res) => {
   try {
-    const expenseCategories = await ExpenseCategory.findAll();
+    const expenseCategories = await ExpenseCategory.find();
     res.status(200).send(expenseCategories);
   } catch (err) {
     console.error("Unable to connect to the database:", err);
@@ -39,13 +48,8 @@ exports.getAllExpenseCategories = async (req, res) => {
 // Get an expense category by id
 exports.getExpenseCategoryById = async (req, res) => {
   try {
-    const id = req.params.id;
-    const expenseCategory = await ExpenseCategory.findByPk(id);
-
-    if (!expenseCategory) {
-      return res.status(404).send("Expense category not found");
-    }
-
+    const { id } = req.params;
+    const expenseCategory = await ExpenseCategory.findById(id);
     res.status(200).send(expenseCategory);
   } catch (err) {
     console.error("Unable to connect to the database:", err);
@@ -55,45 +59,49 @@ exports.getExpenseCategoryById = async (req, res) => {
 // Update an expense category
 exports.updateExpenseCategory = async (req, res) => {
   try {
-    const id = req.params.id;
+    const { id } = req.params;
     const { name, description } = req.body;
 
-    const expenseCategory = await ExpenseCategory.findByPk(id);
-
+    const expenseCategory = await ExpenseCategory.findById(id);
     if (!expenseCategory) {
       return res.status(404).send("Expense category not found");
     }
 
-    await ExpenseCategory.update(
-      {
-        name: name ? name : expenseCategory.name,
-        description: description ? description : expenseCategory.description,
-      },
-      {
-        where: { id },
-      }
-    );
+    // Find if any expense category already exists with the provided name
+    const expenseCategoryByName = await ExpenseCategory.findOne({ name });
+    if (expenseCategoryByName && expenseCategoryByName._id.toString() !== id) {
+      return res
+        .status(400)
+        .send("Expense category already exists with the provided name");
+    }
 
-    res.status(200).send("Expense category updated successfully");
+    if (expenseCategory) {
+      expenseCategory.name = name || expenseCategory.name;
+      expenseCategory.description = description !== undefined ? description : expenseCategory.description;
+
+      const updatedExpenseCategory = await expenseCategory.save();
+
+      return res.status(200).send({
+        message: "Expense category updated successfully",
+        expenseCategory: updatedExpenseCategory,
+      });
+    }
   } catch (err) {
-    console.error("Unable to connect to the database:", err);
+    res.status(500).send({
+      message: "Some error occurred while updating the expense category.",
+    });
   }
 };
 
 // Delete an expense category
 exports.deleteExpenseCategory = async (req, res) => {
   try {
-    const id = req.params.id;
-    const expenseCategory = await ExpenseCategory.findByPk(id);
-
+    const { id } = req.params;
+    const expenseCategory = await ExpenseCategory.findById(id);
     if (!expenseCategory) {
       return res.status(404).send("Expense category not found");
     }
-
-    await ExpenseCategory.destroy({
-      where: { id },
-    });
-
+    await ExpenseCategory.findByIdAndDelete(id);
     res.status(200).send("Expense category deleted successfully");
   } catch (err) {
     console.error("Unable to connect to the database:", err);

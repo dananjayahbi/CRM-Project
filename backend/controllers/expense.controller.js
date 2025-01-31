@@ -1,96 +1,95 @@
-const sequelize = require("../config/db.config");
-
-const Expense = require("../models/expense.model");
-sequelize.sync({ force: false });
+const Expense = require("../models/Expense.model");
 
 // Create a new expense
 exports.createExpense = async (req, res) => {
   try {
-    const { expenseDate, category, expenseFor, amount, note } = req.body;
+    const { expenseDate, expenseCategory, expenseFor, amount, note } = req.body;
 
-    if (!expenseDate || !category || !expenseFor || !amount) {
-      return res.status(400).send("All fields are required");
+    if (!expenseDate || !expenseCategory || !expenseFor || !amount) {
+      return res.status(400).send("Please provide all required fields");
     }
 
-    const createdExpense = await Expense.create({
+    const expense = new Expense({
       expenseDate,
-      category,
+      expenseCategory,
       expenseFor,
       amount,
       note: note ? note : "",
     });
 
-    res.status(201).send(createdExpense);
-  } catch (error) {
-    res.status(500).send(error.message);
+    const createdExpense = await expense.save();
+    res.status(201).send({
+      message: "Expense created successfully",
+      expense: createdExpense,
+    });
+  } catch (err) {
+    console.error("Unable to connect to the database:", err);
   }
 };
 
 // Get all expenses
 exports.getAllExpenses = async (req, res) => {
   try {
-    const expenses = await Expense.findAll();
+    const expenses = await Expense.find();
     res.status(200).send(expenses);
-  } catch (error) {
-    res.status(500).send(error.message);
+  } catch (err) {
+    console.error("Unable to connect to the database:", err);
   }
 };
 
 // Get an expense by id
 exports.getExpenseById = async (req, res) => {
   try {
-    const expense = await Expense.findByPk(req.params.id);
-    if (!expense) {
-      return res.status(404).send("Expense not found");
-    }
+    const { id } = req.params;
+    const expense = await Expense.findById(id);
     res.status(200).send(expense);
-  } catch (error) {
-    res.status(500).send(error.message);
+  } catch (err) {
+    console.error("Unable to connect to the database:", err);
   }
 };
 
-// Update an expense by id
+// Update an expense
 exports.updateExpense = async (req, res) => {
   try {
     const { id } = req.params;
-    const { expenseDate, category, expenseFor, amount, note } = req.body;
+    const { expenseDate, expenseCategory, expenseFor, amount, note } = req.body;
 
-    const expense = await Expense.findByPk(req.params.id);
+    // Find the expense
+    const expense = await Expense.findById(id);
     if (!expense) {
       return res.status(404).send("Expense not found");
     }
 
     if (expense) {
-      expenseDate ? (expense.expenseDate = expenseDate) : expense.expenseDate;
-      category ? (expense.category = category) : expense.category;
-      expenseFor ? (expense.expenseFor = expenseFor) : expense.expenseFor;
-      amount ? (expense.amount = amount) : expense.amount;
-      note ? (expense.note = note) : expense.note;
+      expense.expenseDate = expenseDate || expense.expenseDate;
+      expense.expenseCategory = expenseCategory || expense.expenseCategory;
+      expense.expenseFor = expenseFor || expense.expenseFor;
+      expense.amount = amount || expense.amount;
+      expense.note = note !== undefined ? note : expense.note;
 
-      await expense.save();
+      const updatedExpense = await expense.save();
 
-      res.status(200).send({
+      return res.status(200).send({
         message: "Expense updated successfully",
-        expense,
+        expense: updatedExpense,
       });
     }
-  } catch (error) {
-    res.status(500).send(error.message);
+  } catch (err) {
+    console.error("Unable to connect to the database:", err);
   }
 };
 
-// Delete an expense by id
+// Delete an expense
 exports.deleteExpense = async (req, res) => {
   try {
     const { id } = req.params;
-    const expense = await Expense.findByPk(id);
+    const expense = await Expense.findById(id);
     if (!expense) {
       return res.status(404).send("Expense not found");
     }
-
-    await expense.destroy();
+    await Expense.findByIdAndDelete(id);
     res.status(200).send("Expense deleted successfully");
-  } catch (error) {
-    res.status(500).send(error.message);
+  } catch (err) {
+    console.error("Unable to connect to the database:", err);
   }
 };

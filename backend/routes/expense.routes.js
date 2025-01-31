@@ -19,7 +19,7 @@ router.get("/getAllExpenses", getAllExpenses);
 
 // Get an expense by id
 // router.get("/getExpenseById/:id", protect, getExpenseById);
-router.get("/getExpense/:id", getExpenseById);
+router.get("/getExpenseById/:id", getExpenseById);
 
 // Update an expense
 // router.put("/updateExpense/:id", protect, updateExpense);

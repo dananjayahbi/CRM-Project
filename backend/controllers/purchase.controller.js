@@ -1,259 +1,128 @@
-const sequelize = require("../config/db.config");
-
-const Purchase = require("../models/purchase.model");
-const PurchaseItem = require("../models/purchaseItem.model");
-sequelize.sync({ force: false });
+const Purchase = require("../models/Purchase.model");
 
 // Create a new purchase
 exports.createPurchase = async (req, res) => {
-  const transaction = await Purchase.sequelize.transaction();
   try {
-    const { supplier, purchaseDate, status, items, grandTotal } = req.body;
+    const { supplier, purchaseDate, status, products, grandTotal } = req.body;
 
-    if (!supplier || !purchaseDate || !status || !items || !grandTotal) {
-      return res.status(400).send("All fields are required");
+    if (!supplier || !purchaseDate || !status || !products || !grandTotal) {
+      return res.status(400).send("All input is required");
     }
 
-    if (!Array.isArray(items) || items.length === 0) {
-      return res.status(400).send("Items must be a non-empty array");
-    }
+    const newPurchase = new Purchase({
+      supplier,
+      purchaseDate,
+      status,
+      products,
+      grandTotal,
+    });
 
-    // Create the Purchase
-    const createdPurchase = await Purchase.create(
-      {
-        supplier,
-        purchaseDate,
-        status,
-        grandTotal,
-      },
-      { transaction }
-    );
-
-    // Create the PurchaseItems
-    for (const item of items) {
-      const {
-        itemName,
-        quantity,
-        purchasePrice,
-        discount,
-        purchaseDate: itemPurchaseDate,
-        unitCost,
-      } = item;
-
-      if (
-        !itemName ||
-        !quantity ||
-        !purchasePrice ||
-        !discount ||
-        !itemPurchaseDate ||
-        !unitCost
-      ) {
-        await transaction.rollback();
-        return res.status(400).send("All item fields are required");
-      }
-
-      await PurchaseItem.create(
-        {
-          purchaseId: createdPurchase.id,
-          itemName,
-          quantity,
-          purchasePrice,
-          discount,
-          purchaseDate: itemPurchaseDate,
-          unitCost,
-        },
-        { transaction }
-      );
-    }
-
-    await transaction.commit();
+    const createdPurchase = await newPurchase.save();
     res.status(201).send({
       message: "Purchase created successfully",
       purchase: createdPurchase,
     });
   } catch (err) {
-    await transaction.rollback();
-    console.error("Unable to create purchase:", err);
-    res.status(500).send("An error occurred while creating the purchase");
+    console.error("Unable to connect to the database:", err);
+    res.status(500).send({
+      message: "Some error occurred while creating the purchase.",
+    });
   }
 };
 
 // Get all purchases
 exports.getAllPurchases = async (req, res) => {
   try {
-    const purchases = await Purchase.findAll({
-      include: PurchaseItem,
-    });
+    const purchases = await Purchase.find();
     res.status(200).send(purchases);
   } catch (err) {
-    console.error("Unable to get purchases:", err);
-    res.status(500).send("An error occurred while getting the purchases");
+    console.error("Unable to connect to the database:", err);
   }
 };
 
-// Get a purchase by ID
+// Get a purchase by id
 exports.getPurchaseById = async (req, res) => {
   try {
-    const purchase = await Purchase.findByPk(req.params.id, {
-      include: PurchaseItem,
-    });
-
-    if (!purchase) {
-      return res.status(404).send("Purchase not found");
-    }
-
-    res.status(200).send(purchase);
+    const { id } = req.params;
+    const purchaseById = await Purchase.findById(id);
+    res.status(200).send(purchaseById);
   } catch (err) {
-    console.error("Unable to get purchase:", err);
-    res.status(500).send("An error occurred while getting the purchase");
+    console.error("Unable to connect to the database:", err);
   }
 };
 
-// Update a purchase by ID
+// Update a purchase
 exports.updatePurchase = async (req, res) => {
-  const transaction = await Purchase.sequelize.transaction();
   try {
-    const purchase = await Purchase.findByPk(req.params.id);
+    const { id } = req.params;
+    const { supplier, purchaseDate, status, products, grandTotal } = req.body;
 
+    const purchase = await Purchase.findById(id);
     if (!purchase) {
-      return res.status(404).send("Purchase not found");
-    }
-
-    const { supplier, purchaseDate, status, items, grandTotal } = req.body;
-
-    // Update the Purchase fields if provided
-    if (supplier) {
-      purchase.supplier = supplier;
-    }
-    if (purchaseDate) {
-      purchase.purchaseDate = purchaseDate;
-    }
-    if (status) {
-      purchase.status = status;
-    }
-    if (grandTotal) {
-      purchase.grandTotal = grandTotal;
-    }
-
-    // Save the updated Purchase
-    await purchase.save({ transaction });
-
-    // Handle PurchaseItem updates and deletions
-    if (items && Array.isArray(items)) {
-      const existingItems = await PurchaseItem.findAll({
-        where: {
-          purchaseId: purchase.id,
-        },
-        transaction,
+      return res.status(404).send({
+        message: `Purchase not found with id ${id}`,
       });
-
-      // Process each item in the request
-      for (const item of items) {
-        const {
-          id: itemId,
-          itemName,
-          quantity,
-          purchasePrice,
-          discount,
-          purchaseDate: itemPurchaseDate,
-          unitCost,
-          delete: deleteFlag,
-        } = item;
-
-        if (itemId) {
-          // Update existing item if itemId is provided
-          const existingItem = existingItems.find((ei) => ei.id === itemId);
-          if (existingItem) {
-            if (itemName) {
-              existingItem.itemName = itemName;
-            }
-            if (quantity) {
-              existingItem.quantity = quantity;
-            }
-            if (purchasePrice) {
-              existingItem.purchasePrice = purchasePrice;
-            }
-            if (discount) {
-              existingItem.discount = discount;
-            }
-            if (itemPurchaseDate) {
-              existingItem.purchaseDate = itemPurchaseDate;
-            }
-            if (unitCost) {
-              existingItem.unitCost = unitCost;
-            }
-            await existingItem.save({ transaction });
-
-            // Delete the item if delete flag is set to true
-            if (deleteFlag) {
-              await existingItem.destroy({ transaction });
-            }
-          }
-        } else {
-          // Create new item if itemId is not provided
-          if (
-            itemName &&
-            quantity &&
-            purchasePrice &&
-            discount &&
-            itemPurchaseDate &&
-            unitCost
-          ) {
-            await PurchaseItem.create(
-              {
-                purchaseId: purchase.id,
-                itemName,
-                quantity,
-                purchasePrice,
-                discount,
-                purchaseDate: itemPurchaseDate,
-                unitCost,
-              },
-              { transaction }
-            );
-          }
-        }
-      }
     }
 
-    await transaction.commit();
-    res.status(200).send({
+    // If the products array provides a new product, then add it to the products object array
+    products.forEach(newProduct => {
+      const existingProductIndex = purchase.products.findIndex(
+        p => p.productObjectId.toString() === newProduct.productObjectId
+      );
+
+      if (existingProductIndex === -1) {
+        // Add new product
+        purchase.products.push(newProduct);
+      } else {
+        // Update existing product
+        purchase.products[existingProductIndex] = {
+          ...purchase.products[existingProductIndex].toObject(),
+          ...newProduct,
+        };
+      }
+    });
+
+    // If the provided products array misses a product that is in the database, it means that product is deleted
+    const updatedProductIds = products.map(p => p.productObjectId.toString());
+    purchase.products = purchase.products.filter(p =>
+      updatedProductIds.includes(p.productObjectId.toString())
+    );
+
+    // Update other fields
+    if (supplier) purchase.supplier = supplier;
+    if (purchaseDate) purchase.purchaseDate = purchaseDate;
+    if (status) purchase.status = status;
+    if (grandTotal) purchase.grandTotal = grandTotal;
+
+    const updatedPurchase = await purchase.save();
+
+    return res.status(200).send({
       message: "Purchase updated successfully",
-      purchase,
+      purchase: updatedPurchase,
     });
   } catch (err) {
-    await transaction.rollback();
-    console.error("Unable to update purchase:", err);
-    res.status(500).send("An error occurred while updating the purchase");
+    console.error("Unable to connect to the database:", err);
+    res.status(500).send({
+      message: "Some error occurred while updating the purchase.",
+    });
   }
 };
 
-// Delete a purchase by ID
+// Delete a purchase
 exports.deletePurchase = async (req, res) => {
   try {
-    const purchase = await Purchase.findByPk(req.params.id, {
-      include: PurchaseItem, // Include PurchaseItems to delete them as well
-    });
-
+    const { id } = req.params;
+    const purchase = await Purchase.findById(id);
     if (!purchase) {
-      return res.status(404).send("Purchase not found");
+      return res.status(404).send({
+        message: `Purchase not found with id ${id}`,
+      });
     }
-
-    // Delete associated PurchaseItems
-    if (purchase.PurchaseItems && purchase.PurchaseItems.length > 0) {
-      await Promise.all(
-        purchase.PurchaseItems.map(async (item) => {
-          await item.destroy();
-        })
-      );
-    }
-
-    // Delete the Purchase itself
-    await purchase.destroy();
-
-    res.status(200).send("Purchase and associated items deleted successfully");
+    await Purchase.findByIdAndDelete(id);
+    res.status(200).send({
+      message: "Purchase deleted successfully",
+    });
   } catch (err) {
-    console.error("Unable to delete purchase:", err);
-    res.status(500).send("An error occurred while deleting the purchase");
+    console.error("Unable to connect to the database:", err);
   }
 };

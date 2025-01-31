@@ -21,13 +21,12 @@ router.get("/getAllPurchases", getAllPurchases);
 // router.get("/getPurchaseById/:id", protect, getPurchaseById);
 router.get("/getPurchaseById/:id", getPurchaseById);
 
-// Update a purchase by id
+// Update a purchase
 // router.put("/updatePurchase/:id", protect, updatePurchase);
 router.put("/updatePurchase/:id", updatePurchase);
 
-// Delete a purchase by id
+// Delete a purchase
 // router.delete("/deletePurchase/:id", protect, deletePurchase);
 router.delete("/deletePurchase/:id", deletePurchase);
-
 
 module.exports = router;

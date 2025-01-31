@@ -4,9 +4,9 @@ const { protect } = require("../middleware/authorization");
 const {
     createPurchaseReturn,
     getAllPurchaseReturns,
-    getPurchaseReturn,
+    getPurchaseReturnById,
     updatePurchaseReturn,
-    deletePurchaseReturn
+    deletePurchaseReturn,
 } = require("../controllers/purchaseReturn.controller");
 
 // Create a new purchase return
@@ -18,14 +18,14 @@ router.post("/createPurchaseReturn", createPurchaseReturn);
 router.get("/getAllPurchaseReturns", getAllPurchaseReturns);
 
 // Get a purchase return by id
-// router.get("/getPurchaseReturn/:id", protect, getPurchaseReturn);
-router.get("/getPurchaseReturn/:id", getPurchaseReturn);
+// router.get("/getPurchaseReturnById/:id", protect, getPurchaseReturnById);
+router.get("/getPurchaseReturnById/:id", getPurchaseReturnById);
 
-// Update a purchase return by id
+// Update a purchase return
 // router.put("/updatePurchaseReturn/:id", protect, updatePurchaseReturn);
 router.put("/updatePurchaseReturn/:id", updatePurchaseReturn);
 
-// Delete a purchase return by id
+// Delete a purchase return
 // router.delete("/deletePurchaseReturn/:id", protect, deletePurchaseReturn);
 router.delete("/deletePurchaseReturn/:id", deletePurchaseReturn);
 

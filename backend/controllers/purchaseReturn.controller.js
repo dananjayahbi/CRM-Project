@@ -1,247 +1,182 @@
-const sequelize = require("../config/db.config");
-
-const PurchaseReturn = require("../models/purchaseReturn.model");
-const PurchaseReturnItem = require("../models/purchaseReturnItem.model");
-sequelize.sync({ force: false });
+const PurchaseReturn = require("../models/PurchaseReturn.model");
+const Purchase = require("../models/Purchase.model");
 
 // Create a new purchase return
 exports.createPurchaseReturn = async (req, res) => {
-  const transaction = await PurchaseReturn.sequelize.transaction();
   try {
-    const { purchaseId, supplier, date, status, items, grandTotal } = req.body;
+    const { purchase, returnDate, products, status, grandTotal } = req.body;
 
-    if (!purchaseId || !supplier || !date || !status || !items || !grandTotal) {
-      return res.status(400).send("All fields are required");
+    if (!purchase) {
+      return res.status(400).send("Purchase is required");
     }
 
-    if (!Array.isArray(items) || items.length === 0) {
-      return res.status(400).send("Items must be a non-empty array");
+    const existingPurchase = await Purchase.findById(purchase);
+    if (!existingPurchase) {
+      return res.status(400).send("Invalid purchase");
     }
 
-    // Create the PurchaseReturn
-    const createdPurchaseReturn = await PurchaseReturn.create(
-      {
-        purchaseId,
-        supplier,
-        date,
-        status,
-        grandTotal,
-      },
-      { transaction }
+    if (!returnDate) {
+      return res.status(400).send("Return date is required");
+    }
+
+    if (!products || products.length === 0) {
+      return res.status(400).send("Products are required");
+    }
+
+    // Check that all products are from the same purchase
+    const purchaseProductIds = existingPurchase.products.map((p) =>
+      p.productObjectId.toString()
     );
-
-    // Create the PurchaseReturnItems
-    for (const item of items) {
-      const { itemName, quantity, purchasePrice, discount, unitCost } = item;
-
-      if (!itemName || !quantity || !purchasePrice || !discount || !unitCost) {
-        await transaction.rollback();
-        return res.status(400).send("All item fields are required");
-      }
-
-      await PurchaseReturnItem.create(
-        {
-          purchaseReturnId: createdPurchaseReturn.id,
-          itemName,
-          quantity,
-          purchasePrice,
-          discount,
-          unitCost,
-        },
-        { transaction }
-      );
+    const invalidProducts = products.filter(
+      (p) => !purchaseProductIds.includes(p.productObjectId)
+    );
+    if (invalidProducts.length > 0) {
+      return res.status(400).send({
+        message: "Invalid products",
+        invalidProducts,
+        purchaseProductIds,
+      });
     }
 
-    await transaction.commit();
+    if (!grandTotal) {
+      return res.status(400).send("Grand total is required");
+    }
+
+    const purchaseReturn = new PurchaseReturn({
+      purchase,
+      returnDate,
+      products,
+      status,
+      grandTotal,
+    });
+
+    const createdPurchaseReturn = await purchaseReturn.save();
     res.status(201).send({
       message: "Purchase return created successfully",
       purchaseReturn: createdPurchaseReturn,
     });
-  } catch (error) {
-    await transaction.rollback();
-    console.error("Unable to create purchase return:", error);
-    res
-      .status(500)
-      .send("An error occurred while creating the purchase return");
+  } catch (err) {
+    console.error("Unable to connect to the database:", err);
+    res.status(500).send({
+      message: "Some error occurred while creating the purchase return.",
+    });
   }
 };
 
 // Get all purchase returns
 exports.getAllPurchaseReturns = async (req, res) => {
   try {
-    const purchaseReturns = await PurchaseReturn.findAll({
-      include: PurchaseReturnItem,
-    });
+    const purchaseReturns = await PurchaseReturn.find();
     res.status(200).send(purchaseReturns);
-  } catch (error) {
-    console.error("Unable to get purchase returns:", error);
-    res
-      .status(500)
-      .send("An error occurred while retrieving the purchase returns");
+  } catch (err) {
+    console.error("Unable to connect to the database:", err);
   }
 };
 
-// Get a single purchase return
-exports.getPurchaseReturn = async (req, res) => {
+// Get a purchase return by id
+exports.getPurchaseReturnById = async (req, res) => {
   try {
-    const purchaseReturn = await PurchaseReturn.findByPk(req.params.id, {
-      include: PurchaseReturnItem,
-    });
-
-    if (!purchaseReturn) {
-      return res.status(404).send("Purchase return not found");
-    }
-
+    const { id } = req.params;
+    const purchaseReturn = await PurchaseReturn.findById(id);
     res.status(200).send(purchaseReturn);
-  } catch (error) {
-    console.error("Unable to get purchase return:", error);
-    res
-      .status(500)
-      .send("An error occurred while retrieving the purchase return");
+  } catch (err) {
+    console.error("Unable to connect to the database:", err);
   }
 };
 
 // Update a purchase return
 exports.updatePurchaseReturn = async (req, res) => {
-  const transaction = await PurchaseReturn.sequelize.transaction();
   try {
-    const purchaseReturn = await PurchaseReturn.findByPk(req.params.id);
+    const { id } = req.params;
+    const { purchase, returnDate, products, status, grandTotal } = req.body;
 
+    const purchaseReturn = await PurchaseReturn.findById(id);
     if (!purchaseReturn) {
-      return res.status(404).send("Purchase return not found");
+      return res.status(400).send("Invalid purchase return");
     }
 
-    const { supplier, date, status, items, grandTotal } = req.body;
-
-    // Update the PurchaseReturn fields if provided
-    if (supplier) {
-      purchaseReturn.supplier = supplier;
-    }
-    if (date) {
-      purchaseReturn.date = date;
-    }
-    if (status) {
-      purchaseReturn.status = status;
-    }
-    if (grandTotal) {
-      purchaseReturn.grandTotal = grandTotal;
+    if (!purchase) {
+      return res.status(400).send("Purchase is required");
     }
 
-    // Save the updated PurchaseReturn
-    await purchaseReturn.save({ transaction });
+    const existingPurchase = await Purchase.findById(purchase);
+    if (!existingPurchase) {
+      return res.status(400).send("Invalid purchase");
+    }
 
-    // Handle PurchaseReturnItems updates and deletions
-    if (items && Array.isArray(items)) {
-      const existingItems = await PurchaseReturnItem.findAll({
-        where: {
-          purchaseReturnId: purchaseReturn.id,
-        },
-        transaction,
-      });
-
-      // Process each item in the request
-      for (const item of items) {
-        const {
-          id: itemId,
-          itemName,
-          quantity,
-          purchasePrice,
-          discount,
-          unitCost,
-          delete: deleteFlag,
-        } = item;
-
-        if (itemId) {
-          // Update existing item if itemId is provided
-          const existingItem = existingItems.find((i) => i.id === itemId);
-          if (existingItem) {
-            if (itemName) {
-              existingItem.itemName = itemName;
-            }
-            if (quantity) {
-              existingItem.quantity = quantity;
-            }
-            if (purchasePrice) {
-              existingItem.purchasePrice = purchasePrice;
-            }
-            if (discount) {
-              existingItem.discount = discount;
-            }
-            if (unitCost) {
-              existingItem.unitCost = unitCost;
-            }
-
-            await existingItem.save({ transaction });
-
-            // Delete the item if delete flag is set to true
-            if (deleteFlag) {
-              await existingItem.destroy({ transaction });
-            }
-          }
-        } else {
-          // Create a new item if itemId is not provided
-          if (itemName && quantity && purchasePrice && discount && unitCost) {
-            await PurchaseReturnItem.create(
-              {
-                purchaseReturnId: purchaseReturn.id,
-                itemName,
-                quantity,
-                purchasePrice,
-                discount,
-                unitCost,
-              },
-              { transaction }
-            );
-          }
-        }
+    // Check that all products are from the same purchase
+    if (products && products.length > 0) {
+      const purchaseProductIds = existingPurchase.products.map((p) =>
+        p.productObjectId.toString()
+      );
+      const invalidProducts = products.filter(
+        (p) => !purchaseProductIds.includes(p.productObjectId)
+      );
+      if (invalidProducts.length > 0) {
+        return res.status(400).send({
+          message: "Invalid products",
+          invalidProducts,
+          purchaseProductIds,
+        });
       }
+    } else {
+      return res.status(400).send("Products are required");
     }
 
-    await transaction.commit();
-    res.status(200).send({
-      message: "Purchase return updated successfully",
-      purchaseReturn,
+    // If the products array provides a new product, then add it to the products object array
+    products.forEach((newProduct) => {
+      const existingProductIndex = purchaseReturn.products.findIndex(
+        (p) => p.productObjectId.toString() === newProduct.productObjectId
+      );
+
+      if (existingProductIndex === -1) {
+        // Add new product
+        purchaseReturn.products.push(newProduct);
+      } else {
+        // Update existing product
+        purchaseReturn.products[existingProductIndex] = {
+          ...purchaseReturn.products[existingProductIndex].toObject(),
+          ...newProduct,
+        };
+      }
     });
-  } catch (error) {
-    await transaction.rollback();
-    console.error("Unable to update purchase return:", error);
-    res
-      .status(500)
-      .send("An error occurred while updating the purchase return");
+
+    // If the provided products array misses a product that is in the database, it means that product is deleted
+    const updatedProductIds = products.map((p) => p.productObjectId.toString());
+    purchaseReturn.products = purchaseReturn.products.filter((p) =>
+      updatedProductIds.includes(p.productObjectId.toString())
+    );
+
+    // Update other fields
+    if (returnDate) purchaseReturn.returnDate = returnDate;
+    if (status) purchaseReturn.status = status;
+    if (grandTotal) purchaseReturn.grandTotal = grandTotal;
+
+    const updatedPurchaseReturn = await purchaseReturn.save();
+
+    return res.status(200).send({
+      message: "Purchase return updated successfully",
+      purchaseReturn: updatedPurchaseReturn,
+    });
+  } catch (err) {
+    console.error("Unable to connect to the database:", err);
+    res.status(500).send({
+      message: "Some error occurred while updating the purchase return.",
+    });
   }
 };
 
 // Delete a purchase return
 exports.deletePurchaseReturn = async (req, res) => {
   try {
-    const purchaseReturn = await PurchaseReturn.findByPk(req.params.id, {
-      include: PurchaseReturnItem,
-    });
-
+    const { id } = req.params;
+    const purchaseReturn = await PurchaseReturn.findById(id);
     if (!purchaseReturn) {
       return res.status(404).send("Purchase return not found");
     }
-
-    // Delete associated PurchaseReturnItems
-    if (
-      purchaseReturn.PurchaseReturnItems &&
-      purchaseReturn.PurchaseReturnItems.length > 0
-    ) {
-      await Promise.all(
-        purchaseReturn.PurchaseReturnItems.map(async (item) => {
-          await item.destroy();
-        })
-      );
-    }
-
-    // Delete the PurchaseReturn itself
-    await purchaseReturn.destroy();
-
+    await PurchaseReturn.findByIdAndDelete(id);
     res.status(200).send("Purchase return deleted successfully");
-  } catch (error) {
-    console.error("Unable to delete purchase return:", error);
-    res
-      .status(500)
-      .send("An error occurred while deleting the purchase return");
+  } catch (err) {
+    console.error("Unable to connect to the database:", err);
   }
 };
